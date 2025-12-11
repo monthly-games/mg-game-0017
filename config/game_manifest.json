@@ -1,0 +1,14 @@
+{
+  "game_id": "game_0017",
+  "code_name": "MG-0017",
+  "title_kr": "던전 크래프트 타이쿤",
+  "title_en": "Dungeon Craft Tycoon",
+  "genre_tags": ["crafting", "idle", "tycoon"],
+  "target_region": ["KR", "SEA", "Global"],
+  "engine_version": "1.0.0",
+  "analytics_profile": "default_v1",
+  "created_at": "2025-07-01",
+  "status": "development",
+  "year": 2,
+  "common_modules": ["crafting_system", "recipe_system", "material_system"]
+}

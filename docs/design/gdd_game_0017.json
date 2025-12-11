@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "game_id": "game_0017",
+    "code_name": "MG-0017",
+    "title_kr": "던전 크래프트 타이쿤",
+    "title_en": "Dungeon Craft Tycoon",
+    "version": "0.1.0",
+    "last_updated": "2025-07-01"
+  },
+  "overview": {
+    "genre_tags": ["crafting", "idle", "tycoon"],
+    "target_audience": {
+      "age": "18-40",
+      "region": ["KR", "SEA", "Global"],
+      "play_style": "relaxed_management"
+    },
+    "core_loop": "재료를 수집하고 아이템을 제작하여 던전 상점을 운영한다",
+    "unique_selling_point": "복잡한 제작 시스템과 방치형 경영의 결합",
+    "year2_role": "제작/레시피/재료 시스템 정교화"
+  },
+  "gameplay": {
+    "core_mechanics": [
+      {
+        "name": "재료 수집",
+        "description": "던전 탐험과 방치 생산으로 다양한 재료 획득"
+      },
+      {
+        "name": "아이템 제작",
+        "description": "레시피를 따라 무기, 방어구, 소모품 제작"
+      },
+      {
+        "name": "상점 운영",
+        "description": "제작한 아이템을 모험가들에게 판매"
+      },
+      {
+        "name": "제작소 업그레이드",
+        "description": "작업대, 용광로 등 제작 설비 개선"
+      }
+    ],
+    "progression": {
+      "type": "shop_expansion",
+      "description": "상점 규모를 확장하고 고급 레시피 해금"
+    },
+    "session_length": "10-15분"
+  },
+  "economy": {
+    "currencies": [
+      {
+        "name": "골드",
+        "type": "soft",
+        "sources": ["아이템 판매", "방치 수익", "퀘스트"],
+        "sinks": ["재료 구매", "설비 업그레이드", "레시피 해금"]
+      },
+      {
+        "name": "보석",
+        "type": "hard",
+        "sources": ["인앱 구매", "업적", "특별 주문"],
+        "sinks": ["즉시 제작", "희귀 레시피", "프리미엄 설비"]
+      },
+      {
+        "name": "재료",
+        "type": "resource",
+        "subtypes": ["철광석", "나무", "가죽", "마법석", "희귀 보석"],
+        "sources": ["던전 탐험", "방치 생산", "재료상 구매"],
+        "sinks": ["아이템 제작", "설비 건설"]
+      }
+    ],
+    "monetization": {
+      "model": "F2P + IAP",
+      "iap_items": ["보석 패키지", "프리미엄 레시피 팩", "제작 속도 증가"],
+      "ad_placements": ["보상형 광고 (제작 완료, 재료 2배)"]
+    }
+  },
+  "crafting_system": {
+    "recipe_tiers": ["basic", "intermediate", "advanced", "master", "legendary"],
+    "crafting_stations": [
+      "workbench",
+      "furnace",
+      "anvil",
+      "alchemy_table",
+      "enchanting_station"
+    ],
+    "quality_system": {
+      "levels": ["normal", "good", "excellent", "masterpiece"],
+      "quality_bonus": "sell_price_multiplier"
+    }
+  },
+  "technical": {
+    "platform": ["Android", "iOS"],
+    "engine": "Flutter + Flame",
+    "backend": "Firebase + Cloud Functions",
+    "analytics": "GA4 + BigQuery"
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "version": "0.1.0",
+  "currencies": {
+    "gold": {
+      "display_name": "골드",
+      "icon": "assets/icons/gold.png",
+      "initial_amount": 10000,
+      "sources": {
+        "item_sale": {
+          "basic_sword": 100,
+          "iron_sword": 500,
+          "steel_sword": 2000,
+          "masterwork_sword": 10000,
+          "multiplier_by_quality": {
+            "normal": 1.0,
+            "good": 1.5,
+            "excellent": 2.0,
+            "masterpiece": 3.0
+          }
+        },
+        "idle_income": {
+          "base_per_hour": 500,
+          "max_accumulation_hours": 8
+        },
+        "adventurer_quest": {
+          "daily": 2000,
+          "weekly": 10000
+        }
+      },
+      "sinks": {
+        "material_purchase": {
+          "iron_ore": 50,
+          "wood": 30,
+          "leather": 80,
+          "magic_stone": 200,
+          "rare_gem": 1000
+        },
+        "station_upgrade": {
+          "base_cost": 1000,
+          "level_multiplier": 2.0
+        },
+        "recipe_unlock": {
+          "basic": 500,
+          "intermediate": 2000,
+          "advanced": 10000,
+          "master": 50000,
+          "legendary": 200000
+        }
+      }
+    },
+    "gems": {
+      "display_name": "보석",
+      "icon": "assets/icons/gem.png",
+      "initial_amount": 100,
+      "iap_packages": [
+        { "gems": 100, "price_usd": 0.99 },
+        { "gems": 500, "price_usd": 4.99 },
+        { "gems": 1200, "price_usd": 9.99 },
+        { "gems": 3000, "price_usd": 19.99 },
+        { "gems": 8000, "price_usd": 49.99 }
+      ],
+      "uses": {
+        "instant_craft": "dynamic_based_on_time",
+        "rare_recipe_pack": 1000,
+        "premium_station": 2000,
+        "material_bundle": 500
+      }
+    },
+    "materials": {
+      "basic": {
+        "iron_ore": {
+          "display_name": "철광석",
+          "sources": ["mine_production", "dungeon_drop"],
+          "production_rate_per_hour": 20
+        },
+        "wood": {
+          "display_name": "나무",
+          "sources": ["forest_production", "purchase"],
+          "production_rate_per_hour": 30
+        },
+        "leather": {
+          "display_name": "가죽",
+          "sources": ["hunting", "purchase"],
+          "production_rate_per_hour": 15
+        }
+      },
+      "advanced": {
+        "magic_stone": {
+          "display_name": "마법석",
+          "sources": ["magic_dungeon", "transmutation"],
+          "production_rate_per_hour": 5
+        },
+        "mithril": {
+          "display_name": "미스릴",
+          "sources": ["deep_mine", "rare_drop"],
+          "production_rate_per_hour": 2
+        }
+      },
+      "rare": {
+        "dragon_scale": {
+          "display_name": "드래곤 비늘",
+          "sources": ["dragon_raid", "event"],
+          "production_rate_per_hour": 0.5
+        },
+        "philosopher_stone": {
+          "display_name": "현자의 돌",
+          "sources": ["special_craft", "legendary_quest"],
+          "production_rate_per_hour": 0.1
+        }
+      }
+    }
+  },
+  "recipes": {
+    "weapons": [
+      {
+        "id": "basic_sword",
+        "name": "기본 검",
+        "tier": "basic",
+        "station": "workbench",
+        "materials": { "iron_ore": 5, "wood": 2 },
+        "craft_time_seconds": 60,
+        "sell_price": 100,
+        "unlock_cost": 0
+      },
+      {
+        "id": "iron_sword",
+        "name": "철 검",
+        "tier": "intermediate",
+        "station": "anvil",
+        "materials": { "iron_ore": 20, "wood": 5, "leather": 3 },
+        "craft_time_seconds": 300,
+        "sell_price": 500,
+        "unlock_cost": 2000
+      },
+      {
+        "id": "enchanted_sword",
+        "name": "마법 검",
+        "tier": "advanced",
+        "station": "enchanting_station",
+        "materials": { "iron_ore": 50, "magic_stone": 10, "rare_gem": 5 },
+        "craft_time_seconds": 1800,
+        "sell_price": 5000,
+        "unlock_cost": 10000
+      },
+      {
+        "id": "dragon_slayer",
+        "name": "드래곤 슬레이어",
+        "tier": "legendary",
+        "station": "enchanting_station",
+        "materials": { "mithril": 30, "dragon_scale": 10, "philosopher_stone": 1 },
+        "craft_time_seconds": 7200,
+        "sell_price": 50000,
+        "unlock_cost": 200000
+      }
+    ],
+    "armor": [
+      {
+        "id": "leather_armor",
+        "name": "가죽 갑옷",
+        "tier": "basic",
+        "station": "workbench",
+        "materials": { "leather": 10, "wood": 3 },
+        "craft_time_seconds": 120,
+        "sell_price": 150,
+        "unlock_cost": 500
+      }
+    ],
+    "potions": [
+      {
+        "id": "health_potion",
+        "name": "체력 물약",
+        "tier": "basic",
+        "station": "alchemy_table",
+        "materials": { "magic_stone": 2, "wood": 1 },
+        "craft_time_seconds": 30,
+        "sell_price": 50,
+        "unlock_cost": 1000
+      }
+    ]
+  }
+}

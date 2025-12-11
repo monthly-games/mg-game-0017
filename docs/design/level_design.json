@@ -1,0 +1,167 @@
+{
+  "version": "0.1.0",
+  "shop_progression": [
+    {
+      "level": 1,
+      "name": "작은 대장간",
+      "unlock_stations": ["workbench"],
+      "unlock_recipes": ["basic_sword", "basic_axe"],
+      "customer_capacity": 3,
+      "upgrade_cost": 0
+    },
+    {
+      "level": 2,
+      "name": "마을 대장간",
+      "unlock_stations": ["furnace"],
+      "unlock_recipes": ["iron_sword", "leather_armor"],
+      "customer_capacity": 5,
+      "upgrade_cost": 5000
+    },
+    {
+      "level": 3,
+      "name": "도시 무기점",
+      "unlock_stations": ["anvil", "alchemy_table"],
+      "unlock_recipes": ["steel_sword", "health_potion", "mana_potion"],
+      "customer_capacity": 10,
+      "upgrade_cost": 20000
+    },
+    {
+      "level": 4,
+      "name": "왕국 무기점",
+      "unlock_stations": ["enchanting_station"],
+      "unlock_recipes": ["enchanted_sword", "magic_armor"],
+      "customer_capacity": 15,
+      "upgrade_cost": 100000
+    },
+    {
+      "level": 5,
+      "name": "전설의 대장간",
+      "unlock_stations": ["legendary_forge"],
+      "unlock_recipes": ["dragon_slayer", "phoenix_armor", "elixir"],
+      "customer_capacity": 25,
+      "upgrade_cost": 500000
+    }
+  ],
+  "crafting_stations": [
+    {
+      "id": "workbench",
+      "name": "작업대",
+      "unlock_level": 1,
+      "max_level": 20,
+      "upgrade_benefits": {
+        "craft_speed": "+5%_per_level",
+        "quality_chance": "+1%_per_level"
+      },
+      "base_upgrade_cost": 500
+    },
+    {
+      "id": "furnace",
+      "name": "용광로",
+      "unlock_level": 2,
+      "max_level": 20,
+      "upgrade_benefits": {
+        "craft_speed": "+5%_per_level",
+        "material_efficiency": "+2%_per_level"
+      },
+      "base_upgrade_cost": 1000
+    },
+    {
+      "id": "anvil",
+      "name": "모루",
+      "unlock_level": 3,
+      "max_level": 20,
+      "upgrade_benefits": {
+        "craft_speed": "+5%_per_level",
+        "quality_chance": "+2%_per_level"
+      },
+      "base_upgrade_cost": 3000
+    },
+    {
+      "id": "alchemy_table",
+      "name": "연금술 테이블",
+      "unlock_level": 3,
+      "max_level": 20,
+      "upgrade_benefits": {
+        "potion_yield": "+10%_per_level",
+        "rare_potion_chance": "+1%_per_level"
+      },
+      "base_upgrade_cost": 3000
+    },
+    {
+      "id": "enchanting_station",
+      "name": "마법 부여대",
+      "unlock_level": 4,
+      "max_level": 15,
+      "upgrade_benefits": {
+        "enchant_power": "+5%_per_level",
+        "success_rate": "+2%_per_level"
+      },
+      "base_upgrade_cost": 10000
+    },
+    {
+      "id": "legendary_forge",
+      "name": "전설의 대장로",
+      "unlock_level": 5,
+      "max_level": 10,
+      "upgrade_benefits": {
+        "craft_speed": "+10%_per_level",
+        "masterpiece_chance": "+3%_per_level",
+        "material_efficiency": "+5%_per_level"
+      },
+      "base_upgrade_cost": 50000
+    }
+  ],
+  "material_sources": {
+    "mine": {
+      "name": "광산",
+      "produces": ["iron_ore", "mithril"],
+      "production_interval_minutes": 30,
+      "upgrade_benefits": "production_+20%_per_level"
+    },
+    "forest": {
+      "name": "숲",
+      "produces": ["wood"],
+      "production_interval_minutes": 20,
+      "upgrade_benefits": "production_+20%_per_level"
+    },
+    "hunting_ground": {
+      "name": "사냥터",
+      "produces": ["leather", "magic_stone"],
+      "production_interval_minutes": 40,
+      "upgrade_benefits": "production_+20%_per_level"
+    },
+    "dungeon": {
+      "name": "던전 탐험",
+      "produces": ["rare_materials", "dragon_scale"],
+      "exploration_time_hours": 2,
+      "upgrade_benefits": "rare_drop_rate_+5%_per_level"
+    }
+  },
+  "customer_types": [
+    {
+      "type": "novice_adventurer",
+      "frequency": "common",
+      "preferred_items": ["basic_tier"],
+      "payment_multiplier": 1.0
+    },
+    {
+      "type": "veteran_warrior",
+      "frequency": "uncommon",
+      "preferred_items": ["intermediate_tier", "advanced_tier"],
+      "payment_multiplier": 1.5
+    },
+    {
+      "type": "elite_knight",
+      "frequency": "rare",
+      "preferred_items": ["advanced_tier", "master_tier"],
+      "payment_multiplier": 2.0
+    },
+    {
+      "type": "legendary_hero",
+      "frequency": "very_rare",
+      "preferred_items": ["master_tier", "legendary_tier"],
+      "payment_multiplier": 3.0,
+      "special_bonus": "reputation_+10"
+    }
+  ]
+}
