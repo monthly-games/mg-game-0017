@@ -8,6 +8,7 @@ import 'features/materials/material_inventory.dart';
 import 'features/economy/economy_manager.dart';
 import 'features/crafting/crafting_manager.dart';
 import 'features/shop/shop_manager.dart';
+import 'features/stations/station_manager.dart';
 import 'screens/tycoon_screen.dart';
 
 void main() async {
@@ -33,6 +34,7 @@ class TycoonApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => MaterialInventory()),
         ChangeNotifierProvider(create: (_) => EconomyManager()),
+        ChangeNotifierProvider(create: (_) => StationManager()),
         ChangeNotifierProxyProvider<MaterialInventory, CraftingManager>(
           create: (context) => CraftingManager(
             Provider.of<MaterialInventory>(context, listen: false),

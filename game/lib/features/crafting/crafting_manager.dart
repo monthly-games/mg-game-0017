@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'dart:math';
 import 'recipe_data.dart';
+import 'recipe_unlock.dart';
 import '../materials/material_inventory.dart';
 
 /// Represents an item that has been crafted
@@ -64,6 +65,9 @@ class CraftingManager extends ChangeNotifier {
     'leather_armor',
     'wooden_shield',
   };
+
+  // Crafted recipe history (for unlock prerequisites)
+  final Set<String> _craftedRecipeIds = {};
 
   // Active crafting jobs by station
   final Map<CraftingStation, CraftingJob?> _activeJobs = {};
@@ -147,6 +151,9 @@ class CraftingManager extends ChangeNotifier {
       quality: quality,
     );
 
+    // Mark recipe as crafted (for unlock prerequisites)
+    _craftedRecipeIds.add(job.recipe.id);
+
     // Clear job
     _activeJobs[station] = null;
     _completedItems.add(item);
@@ -217,4 +224,42 @@ class CraftingManager extends ChangeNotifier {
   bool hasCompletedJobs() {
     return _activeJobs.values.any((job) => job != null && job.isComplete);
   }
+
+  /// Get recipes available for unlocking
+  List<Recipe> getAvailableUnlocks(int shopLevel, int currentGold) {
+    return RecipeUnlocks.getAvailableRecipes(shopLevel, _unlockedRecipeIds)
+        .where((recipe) {
+      final requirement = RecipeUnlocks.getRequirement(recipe.id);
+      if (requirement == null) return false;
+
+      return RecipeUnlocks.canUnlock(
+        recipe.id,
+        shopLevel,
+        currentGold,
+        _unlockedRecipeIds,
+        _craftedRecipeIds,
+      );
+    }).toList();
+  }
+
+  /// Unlock a recipe with gold
+  bool unlockRecipeWithGold(String recipeId, int shopLevel, int currentGold, Function(int) spendGold) {
+    if (!RecipeUnlocks.canUnlock(recipeId, shopLevel, currentGold, _unlockedRecipeIds, _craftedRecipeIds)) {
+      return false;
+    }
+
+    final requirement = RecipeUnlocks.getRequirement(recipeId);
+    if (requirement == null) return false;
+
+    // Spend gold
+    if (!spendGold(requirement.goldCost)) return false;
+
+    // Unlock recipe
+    _unlockedRecipeIds.add(recipeId);
+    notifyListeners();
+    return true;
+  }
+
+  /// Get all recipes that have been crafted at least once
+  Set<String> get craftedRecipeIds => Set.unmodifiable(_craftedRecipeIds);
 }

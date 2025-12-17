@@ -7,7 +7,9 @@ import '../features/materials/material_data.dart';
 import '../features/economy/economy_manager.dart';
 import '../features/crafting/crafting_manager.dart';
 import '../features/crafting/recipe_data.dart';
+import '../features/crafting/recipe_unlock.dart';
 import '../features/shop/shop_manager.dart';
+import '../features/stations/station_manager.dart';
 
 class TycoonScreen extends StatefulWidget {
   const TycoonScreen({super.key});
@@ -380,8 +382,101 @@ class _TycoonScreenState extends State<TycoonScreen> with TickerProviderStateMix
   }
 
   Widget _buildUpgradeTab() {
-    return const Center(
-      child: Text('업그레이드 시스템 준비 중...', style: TextStyle(color: Colors.grey)),
+    return Consumer4<StationManager, MaterialInventory, EconomyManager, CraftingManager>(
+      builder: (context, stations, inventory, economy, crafting, child) {
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // Station Upgrades Section
+            Text('제작소 업그레이드', style: AppTextStyles.header2),
+            const SizedBox(height: 12),
+            ...CraftingStation.values.map((station) {
+              final data = stations.getStation(station);
+              final canUpgrade = stations.canUpgrade(
+                station,
+                economy,
+                inventory.hasMaterials,
+              );
+
+              return Card(
+                color: AppColors.panel,
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ListTile(
+                  leading: Icon(_getStationIcon(station), color: AppColors.primary),
+                  title: Text('${data.getName()} Lv.${data.level}'),
+                  subtitle: Text(
+                    '속도: +${(data.speedMultiplier * 100 - 100).toInt()}% | 품질: +${(data.qualityBonus * 100).toInt()}%\n'
+                    '비용: ${data.getUpgradeCostGold()} 골드',
+                    style: AppTextStyles.caption,
+                  ),
+                  isThreeLine: true,
+                  trailing: ElevatedButton(
+                    onPressed: canUpgrade
+                        ? () {
+                            if (stations.upgradeStation(
+                              station,
+                              economy,
+                              inventory.consumeMaterials,
+                            )) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('${data.getName()} 업그레이드 완료!')),
+                              );
+                            }
+                          }
+                        : null,
+                    child: const Text('업그레이드'),
+                  ),
+                ),
+              );
+            }),
+
+            const SizedBox(height: 24),
+
+            // Recipe Unlocks Section
+            Text('레시피 해금', style: AppTextStyles.header2),
+            const SizedBox(height: 12),
+            ...crafting.getAvailableUnlocks(economy.gold ~/ 100, economy.gold).map((recipe) {
+              final requirement = RecipeUnlocks.getRequirement(recipe.id);
+              if (requirement == null) return const SizedBox.shrink();
+
+              return Card(
+                color: AppColors.panel,
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: _getTierColor(recipe.tier),
+                    child: Text(
+                      _getTierShort(recipe.tier),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  title: Text(recipe.name),
+                  subtitle: Text(
+                    '${recipe.description}\n비용: ${requirement.goldCost} 골드',
+                    style: AppTextStyles.caption,
+                  ),
+                  isThreeLine: true,
+                  trailing: ElevatedButton(
+                    onPressed: () {
+                      if (crafting.unlockRecipeWithGold(
+                        recipe.id,
+                        economy.gold ~/ 100,
+                        economy.gold,
+                        (amount) => economy.spendGold(amount),
+                      )) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('${recipe.name} 레시피 해금!')),
+                        );
+                      }
+                    },
+                    child: const Text('해금'),
+                  ),
+                ),
+              );
+            }),
+          ],
+        );
+      },
     );
   }
 
@@ -442,6 +537,36 @@ class _TycoonScreenState extends State<TycoonScreen> with TickerProviderStateMix
         return '연금술대';
       case CraftingStation.enchanting:
         return '마법부여대';
+    }
+  }
+
+  Color _getTierColor(RecipeTier tier) {
+    switch (tier) {
+      case RecipeTier.basic:
+        return Colors.grey;
+      case RecipeTier.intermediate:
+        return Colors.green;
+      case RecipeTier.advanced:
+        return Colors.blue;
+      case RecipeTier.master:
+        return Colors.purple;
+      case RecipeTier.legendary:
+        return Colors.orange;
+    }
+  }
+
+  String _getTierShort(RecipeTier tier) {
+    switch (tier) {
+      case RecipeTier.basic:
+        return '기본';
+      case RecipeTier.intermediate:
+        return '중급';
+      case RecipeTier.advanced:
+        return '고급';
+      case RecipeTier.master:
+        return '마스터';
+      case RecipeTier.legendary:
+        return '전설';
     }
   }
 
