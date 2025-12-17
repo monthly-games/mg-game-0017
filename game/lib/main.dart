@@ -10,6 +10,9 @@ import 'features/crafting/crafting_manager.dart';
 import 'features/shop/shop_manager.dart';
 import 'features/stations/station_manager.dart';
 import 'features/save/save_manager.dart';
+import 'features/dungeon/dungeon_manager.dart';
+import 'features/achievements/achievement_manager.dart';
+import 'features/decoration/decoration_manager.dart';
 import 'screens/tycoon_screen.dart';
 
 void main() async {
@@ -41,6 +44,8 @@ class _TycoonAppState extends State<TycoonApp> {
         ChangeNotifierProvider(create: (_) => MaterialInventory()),
         ChangeNotifierProvider(create: (_) => EconomyManager()),
         ChangeNotifierProvider(create: (_) => StationManager()),
+        ChangeNotifierProvider(create: (_) => AchievementManager()),
+        ChangeNotifierProvider(create: (_) => DecorationManager()),
         ChangeNotifierProxyProvider<MaterialInventory, CraftingManager>(
           create: (context) => CraftingManager(
             Provider.of<MaterialInventory>(context, listen: false),
@@ -54,6 +59,13 @@ class _TycoonAppState extends State<TycoonApp> {
           ),
           update: (context, crafting, previous) =>
               previous ?? ShopManager(crafting),
+        ),
+        ChangeNotifierProxyProvider<MaterialInventory, DungeonManager>(
+          create: (context) => DungeonManager(
+            Provider.of<MaterialInventory>(context, listen: false),
+          ),
+          update: (context, inventory, previous) =>
+              previous ?? DungeonManager(inventory),
         ),
         ProxyProvider5<MaterialInventory, CraftingManager, ShopManager,
             EconomyManager, StationManager, SaveManager>(
