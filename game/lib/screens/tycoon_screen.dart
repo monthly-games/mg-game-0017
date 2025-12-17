@@ -11,6 +11,11 @@ import '../features/crafting/recipe_unlock.dart';
 import '../features/shop/shop_manager.dart';
 import '../features/stations/station_manager.dart';
 import '../features/save/save_manager.dart';
+import '../features/dungeon/dungeon_manager.dart';
+import '../features/achievements/achievement_manager.dart';
+import '../features/achievements/achievement_data.dart';
+import '../features/decoration/decoration_manager.dart';
+import '../features/decoration/decoration_data.dart';
 
 class TycoonScreen extends StatefulWidget {
   const TycoonScreen({super.key});
@@ -26,7 +31,7 @@ class _TycoonScreenState extends State<TycoonScreen> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
     _tabController.addListener(() {
       setState(() {
         _selectedTab = _tabController.index;
@@ -43,10 +48,12 @@ class _TycoonScreenState extends State<TycoonScreen> with TickerProviderStateMix
         final inventory = context.read<MaterialInventory>();
         final crafting = context.read<CraftingManager>();
         final shop = context.read<ShopManager>();
+        final dungeon = context.read<DungeonManager>();
 
         inventory.updateProduction(1.0); // 1 second
         crafting.update();
         shop.update();
+        dungeon.update();
 
         _startGameLoop();
       }
@@ -101,11 +108,14 @@ class _TycoonScreenState extends State<TycoonScreen> with TickerProviderStateMix
         ],
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
           tabs: const [
             Tab(icon: Icon(Icons.inventory), text: '재료'),
             Tab(icon: Icon(Icons.build), text: '제작'),
             Tab(icon: Icon(Icons.store), text: '상점'),
             Tab(icon: Icon(Icons.upgrade), text: '업그레이드'),
+            Tab(icon: Icon(Icons.explore), text: '던전'),
+            Tab(icon: Icon(Icons.emoji_events), text: '업적'),
           ],
         ),
       ),
@@ -121,6 +131,8 @@ class _TycoonScreenState extends State<TycoonScreen> with TickerProviderStateMix
                 _buildCraftingTab(),
                 _buildShopTab(),
                 _buildUpgradeTab(),
+                _buildDungeonTab(),
+                _buildAchievementsTab(),
               ],
             ),
           ),
@@ -629,5 +641,169 @@ class _TycoonScreenState extends State<TycoonScreen> with TickerProviderStateMix
       case Quality.masterpiece:
         return Colors.purple;
     }
+  }
+
+  Widget _buildDungeonTab() {
+    return Consumer<DungeonManager>(
+      builder: (context, dungeon, child) {
+        final session = dungeon.activeSession;
+
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // Active session
+            if (session != null) ...[
+              Card(
+                color: AppColors.panel,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Text('${dungeon.getDungeonName(session.depth)} 탐험 중',
+                           style: AppTextStyles.header2),
+                      const SizedBox(height: 12),
+                      LinearProgressIndicator(value: session.progress),
+                      const SizedBox(height: 8),
+                      Text('남은 시간: ${session.remainingTime.inSeconds}초',
+                           style: AppTextStyles.body),
+                      const SizedBox(height: 12),
+                      if (session.isComplete)
+                        ElevatedButton(
+                          onPressed: () {
+                            final rewards = dungeon.completeExploration();
+                            if (rewards.isNotEmpty && mounted) {
+                              final rewardText = rewards.entries
+                                  .map((e) => '${MaterialData.getByType(e.key).name} ${e.value}개')
+                                  .join(', ');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('획득: $rewardText')),
+                              );
+                            }
+                          },
+                          child: const Text('보상 수령'),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // Dungeon options
+            Text('던전 선택', style: AppTextStyles.header2),
+            const SizedBox(height: 12),
+            ...[1, 2, 3].map((depth) {
+              final unlocked = dungeon.isDepthUnlocked(depth);
+              final canExplore = dungeon.canExplore() && unlocked;
+
+              return Card(
+                color: AppColors.panel,
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ListTile(
+                  leading: Icon(
+                    Icons.explore,
+                    color: unlocked ? AppColors.primary : Colors.grey,
+                  ),
+                  title: Text(dungeon.getDungeonName(depth)),
+                  subtitle: Text(
+                    dungeon.getDungeonDescription(depth),
+                    style: AppTextStyles.caption,
+                  ),
+                  isThreeLine: true,
+                  trailing: ElevatedButton(
+                    onPressed: canExplore
+                        ? () {
+                            dungeon.startExploration(depth);
+                          }
+                        : null,
+                    child: Text(unlocked ? '탐험' : '잠김'),
+                  ),
+                ),
+              );
+            }),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildAchievementsTab() {
+    return Consumer2<AchievementManager, EconomyManager>(
+      builder: (context, achievements, economy, child) {
+        final unclaimed = achievements.unclaimedAchievements;
+
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // Summary
+            Card(
+              color: AppColors.panel,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text('업적 진행도', style: AppTextStyles.header2),
+                    const SizedBox(height: 12),
+                    Text(
+                      '${achievements.completedAchievements} / ${achievements.totalAchievements} 달성',
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    if (unclaimed.isNotEmpty)
+                      Text('수령 대기중: ${unclaimed.length}개',
+                           style: TextStyle(color: Colors.orange)),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Achievements list
+            Text('업적 목록', style: AppTextStyles.header2),
+            const SizedBox(height: 12),
+            ...achievements.allProgress.map((progress) {
+              final canClaim = progress.canClaim;
+              final claimed = progress.claimed;
+
+              return Card(
+                color: claimed ? AppColors.background : AppColors.panel,
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ListTile(
+                  leading: Icon(
+                    claimed ? Icons.check_circle : Icons.emoji_events,
+                    color: claimed ? Colors.green : (canClaim ? Colors.orange : Colors.grey),
+                  ),
+                  title: Text(progress.achievement.name),
+                  subtitle: Text(
+                    '${progress.achievement.description}\n'
+                    '진행: ${progress.currentValue} / ${progress.achievement.targetValue}\n'
+                    '보상: ${progress.achievement.reward.gold} 골드, ${progress.achievement.reward.gems} 보석',
+                    style: AppTextStyles.caption,
+                  ),
+                  isThreeLine: true,
+                  trailing: canClaim
+                      ? ElevatedButton(
+                          onPressed: () {
+                            final reward = achievements.claimAchievement(progress.achievement.id);
+                            if (reward != null) {
+                              economy.addGold(reward.gold);
+                              economy.addGems(reward.gems);
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('보상 획득: ${reward.gold} 골드, ${reward.gems} 보석')),
+                                );
+                              }
+                            }
+                          },
+                          child: const Text('수령'),
+                        )
+                      : (claimed ? const Icon(Icons.check, color: Colors.green) : null),
+                ),
+              );
+            }),
+          ],
+        );
+      },
+    );
   }
 }
