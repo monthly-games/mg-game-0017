@@ -32,6 +32,28 @@ class MaterialInventory extends ChangeNotifier {
     return _materials[type] ?? 0.0;
   }
 
+  /// Get amount of a specific material (alias for save/load)
+  int getMaterialAmount(MaterialType type) {
+    return (_materials[type] ?? 0.0).toInt();
+  }
+
+  /// Set material amount (for save/load)
+  void setMaterialAmount(MaterialType type, int amount) {
+    _materials[type] = amount.toDouble();
+    notifyListeners();
+  }
+
+  /// Get production rate for a material
+  double getProductionRate(MaterialType type) {
+    return _productionRates[type] ?? 0.0;
+  }
+
+  /// Set production rate (for save/load)
+  void setProductionRate(MaterialType type, double rate) {
+    _productionRates[type] = rate;
+    notifyListeners();
+  }
+
   /// Add material to inventory
   void addMaterial(MaterialType type, double amount) {
     _materials[type] = (_materials[type] ?? 0.0) + amount;
@@ -72,9 +94,10 @@ class MaterialInventory extends ChangeNotifier {
   }
 
   /// Calculate offline production when app reopens
-  void calculateOfflineProduction() {
+  void calculateOfflineProduction([Duration? offlineDuration]) {
     final now = DateTime.now();
-    final offlineSeconds = now.difference(_lastUpdateTime).inSeconds.toDouble();
+    final offlineSeconds = offlineDuration?.inSeconds.toDouble() ??
+                          now.difference(_lastUpdateTime).inSeconds.toDouble();
 
     // Cap offline time to 8 hours
     final cappedSeconds = offlineSeconds.clamp(0.0, 8 * 60 * 60);

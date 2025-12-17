@@ -262,4 +262,11 @@ class CraftingManager extends ChangeNotifier {
 
   /// Get all recipes that have been crafted at least once
   Set<String> get craftedRecipeIds => Set.unmodifiable(_craftedRecipeIds);
+
+  /// Restore crafted recipe history (for save/load)
+  void restoreCraftedRecipes(List<String> recipeIds) {
+    _craftedRecipeIds.clear();
+    _craftedRecipeIds.addAll(recipeIds);
+    notifyListeners();
+  }
 }

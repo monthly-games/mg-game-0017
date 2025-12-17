@@ -33,6 +33,7 @@ dependencies:
   provider: ^6.1.1
   get_it: ^9.2.0
   equatable: ^2.0.5
+  shared_preferences: ^2.2.2
   mg_common_game:
     path: ../../mg-common-game
   flame: ^1.13.0

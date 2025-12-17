@@ -10,6 +10,7 @@ import '../features/crafting/recipe_data.dart';
 import '../features/crafting/recipe_unlock.dart';
 import '../features/shop/shop_manager.dart';
 import '../features/stations/station_manager.dart';
+import '../features/save/save_manager.dart';
 
 class TycoonScreen extends StatefulWidget {
   const TycoonScreen({super.key});
@@ -64,6 +65,40 @@ class _TycoonScreenState extends State<TycoonScreen> with TickerProviderStateMix
       appBar: AppBar(
         title: const Text('Dungeon Craft Tycoon'),
         backgroundColor: AppColors.primary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            tooltip: '저장',
+            onPressed: () {
+              final saveManager = context.read<SaveManager>();
+              saveManager.saveGame().then((success) {
+                if (success && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('게임 저장 완료!')),
+                  );
+                }
+              });
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.folder_open),
+            tooltip: '불러오기',
+            onPressed: () {
+              final saveManager = context.read<SaveManager>();
+              saveManager.loadGame().then((success) {
+                if (success && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('게임 불러오기 완료!')),
+                  );
+                } else if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('저장된 게임이 없습니다.')),
+                  );
+                }
+              });
+            },
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [

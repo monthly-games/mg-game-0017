@@ -9,6 +9,7 @@ import 'features/economy/economy_manager.dart';
 import 'features/crafting/crafting_manager.dart';
 import 'features/shop/shop_manager.dart';
 import 'features/stations/station_manager.dart';
+import 'features/save/save_manager.dart';
 import 'screens/tycoon_screen.dart';
 
 void main() async {
@@ -25,9 +26,14 @@ void _setupDI() {
   }
 }
 
-class TycoonApp extends StatelessWidget {
+class TycoonApp extends StatefulWidget {
   const TycoonApp({super.key});
 
+  @override
+  State<TycoonApp> createState() => _TycoonAppState();
+}
+
+class _TycoonAppState extends State<TycoonApp> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -49,6 +55,24 @@ class TycoonApp extends StatelessWidget {
           update: (context, crafting, previous) =>
               previous ?? ShopManager(crafting),
         ),
+        ProxyProvider5<MaterialInventory, CraftingManager, ShopManager,
+            EconomyManager, StationManager, SaveManager>(
+          create: (context) => SaveManager(
+            inventory: Provider.of<MaterialInventory>(context, listen: false),
+            crafting: Provider.of<CraftingManager>(context, listen: false),
+            shop: Provider.of<ShopManager>(context, listen: false),
+            economy: Provider.of<EconomyManager>(context, listen: false),
+            stations: Provider.of<StationManager>(context, listen: false),
+          ),
+          update: (context, inventory, crafting, shop, economy, stations, previous) =>
+              previous ?? SaveManager(
+                inventory: inventory,
+                crafting: crafting,
+                shop: shop,
+                economy: economy,
+                stations: stations,
+              ),
+        ),
       ],
       child: MaterialApp(
         title: 'Dungeon Craft Tycoon',
@@ -60,7 +84,24 @@ class TycoonApp extends StatelessWidget {
             brightness: Brightness.dark,
           ),
         ),
-        home: const TycoonScreen(),
+        home: Builder(
+          builder: (context) {
+            // Auto-load game when app starts
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              final saveManager = context.read<SaveManager>();
+              saveManager.loadGame().then((loaded) {
+                if (loaded) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('게임 불러오기 완료!')),
+                  );
+                }
+                // Start auto-save
+                saveManager.startAutoSave();
+              });
+            });
+            return const TycoonScreen();
+          },
+        ),
       ),
     );
   }
