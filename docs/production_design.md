@@ -272,30 +272,30 @@ int idleIncome(Shop shop, Duration offline) {
 ## 6. 프로덕션 체크리스트
 
 ### 핵심 기능
-- [ ] 제작 시스템
-- [ ] 품질 시스템
-- [ ] 던전 탐험
-- [ ] 레시피 시스템
+- [x] 제작 시스템 (CraftingManager: startCrafting, completeCrafting, CraftingJob)
+- [x] 품질 시스템 (Quality: normal/good/excellent/masterpiece, 확률 롤)
+- [x] 던전 탐험 (DungeonManager)
+- [x] 레시피 시스템 (Recipe, RecipeUnlocks: 조건부 해금)
 - [ ] 방치 판매
 
 ### 콘텐츠
-- [ ] 100+ 레시피
-- [ ] 50+ 재료
-- [ ] 5 제작 스테이션
+- [ ] 100+ 레시피 (현재 3개: iron_sword/leather_armor/wooden_shield)
+- [x] 재료 시스템 (MaterialInventory, MaterialData)
+- [x] 제작 스테이션 (CraftingStation enum, StationManager)
 - [ ] 5+ 던전
 - [ ] 튜토리얼
 
 ### 메타 시스템
-- [ ] 프레스티지 시스템
-- [ ] 일일/주간 퀘스트
-- [ ] 도전과제
-- [ ] 설정 화면
+- [x] 도전과제 (AchievementManager, AchievementData)
+- [x] 장식 시스템 (DecorationManager, DecorationData)
+- [x] 업그레이드 시스템 (UpgradeManager)
+- [x] 경제 시스템 (EconomyManager)
 - [ ] 친구 시스템
 
 ### 수익화
 - [ ] 광고 SDK
 - [ ] IAP 상품
-- [ ] 상점 UI
+- [x] 상점 UI (ShopManager)
 - [ ] 시즌 패스
 
 ### QA/최적화
