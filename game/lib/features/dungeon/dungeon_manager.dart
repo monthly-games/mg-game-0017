@@ -110,28 +110,33 @@ class DungeonManager extends ChangeNotifier {
       case 1: // Shallow Forest
         rewards[MaterialType.wood] = 5 + _random.nextInt(10);
         rewards[MaterialType.herb] = 3 + _random.nextInt(5);
-        if (_random.nextDouble() < 0.5)
+        if (_random.nextDouble() < 0.5) {
           rewards[MaterialType.root] = 2 + _random.nextInt(3);
-        if (_random.nextDouble() < 0.3)
+        }
+        if (_random.nextDouble() < 0.3) {
           rewards[MaterialType.copper] = 1 + _random.nextInt(3);
+        }
         break;
 
       case 2: // Iron Mine
         rewards[MaterialType.ironOre] = 8 + _random.nextInt(8);
         rewards[MaterialType.tin] = 5 + _random.nextInt(5);
         rewards[MaterialType.copper] = 5 + _random.nextInt(5);
-        if (_random.nextDouble() < 0.2)
+        if (_random.nextDouble() < 0.2) {
           rewards[MaterialType.silver] = 1 + _random.nextInt(2);
+        }
         break;
 
       case 3: // Magic Ruins
         rewards[MaterialType.magicStone] = 3 + _random.nextInt(5);
         rewards[MaterialType.silver] = 3 + _random.nextInt(5);
         rewards[MaterialType.cloth] = 5 + _random.nextInt(5);
-        if (_random.nextDouble() < 0.4)
+        if (_random.nextDouble() < 0.4) {
           rewards[MaterialType.gold] = 1 + _random.nextInt(3);
-        if (_random.nextDouble() < 0.2)
+        }
+        if (_random.nextDouble() < 0.2) {
           rewards[MaterialType.silk] = 1 + _random.nextInt(3);
+        }
         break;
 
       case 4: // Deep Cavern (New)

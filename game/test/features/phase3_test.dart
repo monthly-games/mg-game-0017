@@ -8,7 +8,6 @@ import 'package:game/features/shop/shop_manager.dart';
 import 'package:game/features/stations/station_manager.dart';
 import 'package:game/features/upgrades/upgrade_manager.dart';
 import 'package:game/features/achievements/achievement_manager.dart';
-import 'package:game/features/achievements/achievement_data.dart';
 import 'package:game/features/decoration/decoration_manager.dart';
 import 'package:game/features/decoration/decoration_data.dart';
 import 'package:game/features/save/save_manager.dart';
@@ -43,7 +42,9 @@ void main() {
 
     test('Claiming reward', () {
       // Complete "craft_1"
-      for (int i = 0; i < 10; i++) achievements.recordItemCrafted();
+      for (int i = 0; i < 10; i++) {
+        achievements.recordItemCrafted();
+      }
 
       final reward = achievements.claimAchievement('craft_1');
       expect(reward, isNotNull);
