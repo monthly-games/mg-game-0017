@@ -3,10 +3,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../materials/material_inventory.dart';
 import '../materials/material_data.dart';
-import '../crafting/crafting_manager.dart';
+import '../crafting/recipe_data.dart';
 import '../shop/shop_manager.dart';
 import '../economy/economy_manager.dart';
+import '../crafting/crafting_manager.dart';
 import '../stations/station_manager.dart';
+import '../upgrades/upgrade_manager.dart';
 
 /// Manages saving and loading game state
 class SaveManager extends ChangeNotifier {
@@ -18,6 +20,7 @@ class SaveManager extends ChangeNotifier {
   final ShopManager _shop;
   final EconomyManager _economy;
   final StationManager _stations;
+  final UpgradeManager _upgrades;
 
   DateTime? _lastSaveTime;
   DateTime? get lastSaveTime => _lastSaveTime;
@@ -28,11 +31,13 @@ class SaveManager extends ChangeNotifier {
     required ShopManager shop,
     required EconomyManager economy,
     required StationManager stations,
-  })  : _inventory = inventory,
-        _crafting = crafting,
-        _shop = shop,
-        _economy = economy,
-        _stations = stations;
+    required UpgradeManager upgrades,
+  }) : _inventory = inventory,
+       _crafting = crafting,
+       _shop = shop,
+       _economy = economy,
+       _stations = stations,
+       _upgrades = upgrades;
 
   /// Save all game state
   Future<bool> saveGame() async {
@@ -43,30 +48,24 @@ class SaveManager extends ChangeNotifier {
       final saveData = {
         'version': 1,
         'timestamp': DateTime.now().toIso8601String(),
-        'economy': {
-          'gold': _economy.gold,
-          'gems': _economy.gems,
-        },
+        'economy': {'gold': _economy.gold, 'gems': _economy.gems},
+        'upgrades': _upgrades.toJson(),
         'materials': {
           for (var type in MaterialType.values)
             type.name: {
               'amount': _inventory.getMaterialAmount(type),
               'productionRate': _inventory.getProductionRate(type),
-            }
+            },
         },
         'stations': {
           for (var station in CraftingStation.values)
-            station.name: {
-              'level': _stations.getStation(station).level,
-            }
+            station.name: {'level': _stations.getStation(station).level},
         },
         'crafting': {
           'unlockedRecipes': _crafting.unlockedRecipeIds.toList(),
           'craftedRecipes': _crafting.craftedRecipeIds.toList(),
         },
-        'shop': {
-          'displaySlots': _shop.maxDisplaySlots,
-        },
+        'shop': {'displaySlots': _shop.maxDisplaySlots},
       };
 
       // Save to SharedPreferences
@@ -100,8 +99,8 @@ class SaveManager extends ChangeNotifier {
       // Load economy
       final economy = saveData['economy'] as Map<String, dynamic>;
       _economy.reset();
-      _economy.addGold(economy['gold'] as int);
-      _economy.addGems(economy['gems'] as int);
+      _economy.setGold(economy['gold'] as int);
+      _economy.setGems(economy['gems'] as int);
 
       // Load materials
       final materials = saveData['materials'] as Map<String, dynamic>;
@@ -116,7 +115,9 @@ class SaveManager extends ChangeNotifier {
       // Load stations
       final stations = saveData['stations'] as Map<String, dynamic>;
       for (var entry in stations.entries) {
-        final station = CraftingStation.values.firstWhere((s) => s.name == entry.key);
+        final station = CraftingStation.values.firstWhere(
+          (s) => s.name == entry.key,
+        );
         final data = entry.value as Map<String, dynamic>;
         final level = data['level'] as int;
 
@@ -128,8 +129,10 @@ class SaveManager extends ChangeNotifier {
 
       // Load crafting
       final crafting = saveData['crafting'] as Map<String, dynamic>;
-      final unlockedRecipes = (crafting['unlockedRecipes'] as List).cast<String>();
-      final craftedRecipes = (crafting['craftedRecipes'] as List).cast<String>();
+      final unlockedRecipes = (crafting['unlockedRecipes'] as List)
+          .cast<String>();
+      final craftedRecipes = (crafting['craftedRecipes'] as List)
+          .cast<String>();
 
       for (var recipeId in unlockedRecipes) {
         _crafting.unlockRecipe(recipeId);
@@ -141,8 +144,11 @@ class SaveManager extends ChangeNotifier {
       // Load shop
       final shop = saveData['shop'] as Map<String, dynamic>;
       final displaySlots = shop['displaySlots'] as int;
-      for (var i = _shop.maxDisplaySlots; i < displaySlots; i++) {
-        _shop.expandDisplaySlots();
+      _shop.loadState(displaySlots, 1);
+
+      // Load upgrades
+      if (saveData['upgrades'] != null) {
+        _upgrades.loadFromJson(saveData['upgrades'] as Map<String, dynamic>);
       }
 
       // Calculate offline production

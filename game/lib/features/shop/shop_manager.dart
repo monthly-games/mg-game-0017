@@ -91,7 +91,8 @@ class ShopManager extends ChangeNotifier {
     if (_currentCustomer == null || _customerArrivalTime == null) return false;
 
     final now = DateTime.now();
-    return now.difference(_customerArrivalTime!).inSeconds < customerStayDuration.inSeconds;
+    return now.difference(_customerArrivalTime!).inSeconds <
+        customerStayDuration.inSeconds;
   }
 
   /// Get time until customer leaves
@@ -187,6 +188,15 @@ class ShopManager extends ChangeNotifier {
   /// Get items customer would buy from display
   List<CraftedItem> getCustomerInterests() {
     if (_currentCustomer == null) return [];
-    return _displayedItems.where((item) => _currentCustomer!.isInterested(item)).toList();
+    return _displayedItems
+        .where((item) => _currentCustomer!.isInterested(item))
+        .toList();
+  }
+
+  /// Load shop state directly
+  void loadState(int maxSlots, int level) {
+    _maxDisplaySlots = maxSlots;
+    _shopLevel = level;
+    notifyListeners();
   }
 }

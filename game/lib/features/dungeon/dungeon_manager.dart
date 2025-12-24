@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:math';
 import '../materials/material_data.dart';
 import '../materials/material_inventory.dart';
+import '../upgrades/upgrade_manager.dart';
 
 /// Dungeon exploration session
 class DungeonSession {
@@ -9,12 +10,11 @@ class DungeonSession {
   final DateTime startTime;
   final int durationSeconds;
 
-  DungeonSession({
-    required this.depth,
-    required this.durationSeconds,
-  }) : startTime = DateTime.now();
+  DungeonSession({required this.depth, required this.durationSeconds})
+    : startTime = DateTime.now();
 
-  bool get isComplete => DateTime.now().difference(startTime).inSeconds >= durationSeconds;
+  bool get isComplete =>
+      DateTime.now().difference(startTime).inSeconds >= durationSeconds;
 
   double get progress {
     final elapsed = DateTime.now().difference(startTime).inSeconds;
@@ -31,12 +31,13 @@ class DungeonSession {
 /// Dungeon exploration manager
 class DungeonManager extends ChangeNotifier {
   final MaterialInventory _inventory;
+  final UpgradeManager _upgrades;
   final Random _random = Random();
 
   DungeonSession? _activeSession;
   int _explorationLevel = 1;
 
-  DungeonManager(this._inventory);
+  DungeonManager(this._inventory, this._upgrades);
 
   DungeonSession? get activeSession => _activeSession;
   int get explorationLevel => _explorationLevel;
@@ -51,27 +52,30 @@ class DungeonManager extends ChangeNotifier {
     if (!canExplore()) return false;
 
     final duration = _getExplorationDuration(depth);
-    _activeSession = DungeonSession(
-      depth: depth,
-      durationSeconds: duration,
-    );
+    _activeSession = DungeonSession(depth: depth, durationSeconds: duration);
 
     notifyListeners();
     return true;
   }
 
-  /// Get exploration duration based on depth
+  // Use speed upgrade
   int _getExplorationDuration(int depth) {
+    int baseDuration;
     switch (depth) {
       case 1:
-        return 10; // 10 seconds for shallow
+        baseDuration = 10;
+        break;
       case 2:
-        return 20; // 20 seconds for medium
+        baseDuration = 20;
+        break;
       case 3:
-        return 30; // 30 seconds for deep
+        baseDuration = 30;
+        break;
       default:
-        return 10;
+        baseDuration = 10;
     }
+    // Apply speed multiplier: Duration / Multiplier
+    return (baseDuration / _upgrades.speedMultiplier).round();
   }
 
   /// Complete exploration and collect rewards
@@ -103,31 +107,44 @@ class DungeonManager extends ChangeNotifier {
     final rewards = <MaterialType, int>{};
 
     switch (depth) {
-      case 1: // Shallow dungeon - basic materials
-        rewards[MaterialType.ironOre] = 5 + _random.nextInt(5); // 5-10
-        rewards[MaterialType.wood] = 5 + _random.nextInt(5); // 5-10
-        if (_random.nextDouble() < 0.3) {
-          rewards[MaterialType.leather] = 1 + _random.nextInt(3); // 1-3
-        }
+      case 1: // Shallow Forest
+        rewards[MaterialType.wood] = 5 + _random.nextInt(10);
+        rewards[MaterialType.herb] = 3 + _random.nextInt(5);
+        if (_random.nextDouble() < 0.5)
+          rewards[MaterialType.root] = 2 + _random.nextInt(3);
+        if (_random.nextDouble() < 0.3)
+          rewards[MaterialType.copper] = 1 + _random.nextInt(3);
         break;
 
-      case 2: // Medium dungeon - intermediate materials
-        rewards[MaterialType.ironOre] = 10 + _random.nextInt(10); // 10-20
-        rewards[MaterialType.wood] = 8 + _random.nextInt(8); // 8-16
-        rewards[MaterialType.leather] = 3 + _random.nextInt(5); // 3-8
-        if (_random.nextDouble() < 0.5) {
-          rewards[MaterialType.magicStone] = 1 + _random.nextInt(2); // 1-2
-        }
+      case 2: // Iron Mine
+        rewards[MaterialType.ironOre] = 8 + _random.nextInt(8);
+        rewards[MaterialType.tin] = 5 + _random.nextInt(5);
+        rewards[MaterialType.copper] = 5 + _random.nextInt(5);
+        if (_random.nextDouble() < 0.2)
+          rewards[MaterialType.silver] = 1 + _random.nextInt(2);
         break;
 
-      case 3: // Deep dungeon - rare materials
-        rewards[MaterialType.ironOre] = 15 + _random.nextInt(15); // 15-30
-        rewards[MaterialType.wood] = 10 + _random.nextInt(10); // 10-20
-        rewards[MaterialType.leather] = 5 + _random.nextInt(8); // 5-13
-        rewards[MaterialType.magicStone] = 2 + _random.nextInt(3); // 2-5
-        if (_random.nextDouble() < 0.2) {
-          rewards[MaterialType.rareGem] = 1; // 20% chance for 1 gem
-        }
+      case 3: // Magic Ruins
+        rewards[MaterialType.magicStone] = 3 + _random.nextInt(5);
+        rewards[MaterialType.silver] = 3 + _random.nextInt(5);
+        rewards[MaterialType.cloth] = 5 + _random.nextInt(5);
+        if (_random.nextDouble() < 0.4)
+          rewards[MaterialType.gold] = 1 + _random.nextInt(3);
+        if (_random.nextDouble() < 0.2)
+          rewards[MaterialType.silk] = 1 + _random.nextInt(3);
+        break;
+
+      case 4: // Deep Cavern (New)
+        rewards[MaterialType.gold] = 3 + _random.nextInt(5);
+        rewards[MaterialType.flower] = 3 + _random.nextInt(5);
+        rewards[MaterialType.rareGem] = 1;
+        if (_random.nextDouble() < 0.1) rewards[MaterialType.mythril] = 1;
+        break;
+
+      case 5: // Dragon's Lair (New)
+        rewards[MaterialType.mythril] = 3 + _random.nextInt(4);
+        rewards[MaterialType.rareGem] = 2 + _random.nextInt(3);
+        rewards[MaterialType.silk] = 5 + _random.nextInt(10);
         break;
     }
 
@@ -138,24 +155,32 @@ class DungeonManager extends ChangeNotifier {
   String getDungeonName(int depth) {
     switch (depth) {
       case 1:
-        return '얕은 던전';
+        return '고요한 숲';
       case 2:
-        return '중간 던전';
+        return '철 광산';
       case 3:
-        return '깊은 던전';
+        return '마법 유적';
+      case 4:
+        return '심연의 동굴';
+      case 5:
+        return '드래곤의 둥지';
       default:
-        return '던전';
+        return '미지의 던전';
     }
   }
 
   String getDungeonDescription(int depth) {
     switch (depth) {
       case 1:
-        return '초보자를 위한 쉬운 던전. 기본 재료를 얻을 수 있습니다.';
+        return '약초와 나무를 구할 수 있는 안전한 숲입니다.';
       case 2:
-        return '숙련자를 위한 던전. 고급 재료가 등장합니다.';
+        return '다양한 광석이 매장된 광산입니다.';
       case 3:
-        return '전문가를 위한 위험한 던전. 희귀 재료를 발견할 수 있습니다.';
+        return '고대 마법의 기운이 느껴지는 유적입니다.';
+      case 4:
+        return '희귀한 보석과 꽃이 피어나는 깊은 동굴입니다.';
+      case 5:
+        return '전설의 금속 미스릴을 얻을 수 있는 위험한 곳입니다.';
       default:
         return '';
     }

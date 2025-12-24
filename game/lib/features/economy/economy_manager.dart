@@ -28,6 +28,18 @@ class EconomyManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Set gold directly (for loading)
+  void setGold(int amount) {
+    _gold = amount;
+    notifyListeners();
+  }
+
+  /// Set gems directly (for loading)
+  void setGems(int amount) {
+    _gems = amount;
+    notifyListeners();
+  }
+
   /// Spend gems (returns false if not enough)
   bool spendGems(int amount) {
     if (_gems < amount) return false;
