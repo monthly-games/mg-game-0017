@@ -1,4 +1,13 @@
-# game_0017 수익화 전략 - 던전 크래프트 타이쿤
+﻿# game_0017 수익화 전략 - 던전 크래프트 타이쿤
+
+> game_id: game_0017
+> repo: mg-game-0017
+> title_kr: 던전 크래프트 타이쿤
+> title_en: Dungeon Craft Tycoon
+> genre_tags: crafting, idle, tycoon
+> doc_type: monetization_design
+> source_of_truth: docs/design/gdd_game_0017.json
+> last_updated: 2025-12-19
 
 ## 게임 개요
 - **장르**: 던전 경영 + 타이쿤 + JRPG

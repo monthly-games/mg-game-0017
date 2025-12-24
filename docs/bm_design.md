@@ -1,7 +1,13 @@
-# 던전 크래프트 타이쿤 - BM 설계 문서
+﻿# 던전 크래프트 타이쿤 - BM 설계 문서
 
 > game_id: game_0017
 > repo: mg-game-0017
+> title_kr: 던전 크래프트 타이쿤
+> title_en: Dungeon Craft Tycoon
+> genre_tags: crafting, idle, tycoon
+> doc_type: bm_design
+> source_of_truth: docs/design/gdd_game_0017.json
+> last_updated: 2025-12-19
 
 ---
 
