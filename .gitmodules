@@ -7,3 +7,6 @@
 [submodule "libs/mg_common_infra"]
 	path = libs/mg_common_infra
 	url = https://github.com/monthly-games/mg-common-infra.git
+[submodule "libs/mg_common_analytics"]
+	path = libs/mg_common_analytics
+	url = https://github.com/monthly-games/mg-common-analytics.git
