@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mg_common_game/systems/battlepass/battlepass_config.dart';
+import 'package:mg_common_game/systems/battlepass/battlepass_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mg_common_game/core/audio/audio_manager.dart';
@@ -27,6 +29,9 @@ void main() async {
 void _setupDI() {
   if (!GetIt.I.isRegistered<AudioManager>()) {
     GetIt.I.registerSingleton<AudioManager>(AudioManager());
+  // BattlePass 시스템
+  GetIt.I.registerSingleton(BattlePassManager());
+  _setupBattlePass();
   }
 }
 
@@ -149,4 +154,23 @@ class _TycoonAppState extends State<TycoonApp> {
       ),
     );
   }
+}
+
+
+void _setupBattlePass() {
+  final bp = GetIt.I<BattlePassManager>();
+
+  final season = BPSeasonBuilder.create28DaySeason(
+    id: 'season_1',
+    nameKr: '시즌 1',
+    startDate: DateTime.now().subtract(const Duration(days: 1)),
+    maxLevel: 50,
+    expPerLevel: 1000,
+  );
+
+  bp.setSeason(season);
+  bp.setMissions(
+    daily: BPSeasonBuilder.createDefaultDailyMissions(),
+    weekly: BPSeasonBuilder.createDefaultWeeklyMissions(),
+  );
 }
