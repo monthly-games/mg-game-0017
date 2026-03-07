@@ -78,7 +78,7 @@ class VfxManager extends Component with HasGameRef {
       final angle = (i / count) * 2 * pi;
       return AcceleratedParticle(position: position.clone(), speed: Vector2(cos(angle), sin(angle)) * (speed * (0.5 + _random.nextDouble() * 0.5)), acceleration: Vector2(0, 120), child: ComputedParticle(renderer: (canvas, particle) {
         final opacity = (1.0 - particle.progress).clamp(0.0, 1.0);
-        canvas.drawCircle(Offset.zero, 4 * (1.0 - particle.progress * 0.5), Paint()..color = color.withOpacity(opacity));
+        canvas.drawCircle(Offset.zero, 4 * (1.0 - particle.progress * 0.5), Paint()..color = color.withValues(alpha: opacity));
       }));
     }));
   }
@@ -88,7 +88,7 @@ class VfxManager extends Component with HasGameRef {
       final angle = _random.nextDouble() * 2 * pi; final speed = radius * (0.4 + _random.nextDouble() * 0.6);
       return AcceleratedParticle(position: position.clone(), speed: Vector2(cos(angle), sin(angle)) * speed, acceleration: Vector2(0, 90), child: ComputedParticle(renderer: (canvas, particle) {
         final opacity = (1.0 - particle.progress).clamp(0.0, 1.0);
-        canvas.drawCircle(Offset.zero, 5 * (1.0 - particle.progress * 0.3), Paint()..color = color.withOpacity(opacity));
+        canvas.drawCircle(Offset.zero, 5 * (1.0 - particle.progress * 0.3), Paint()..color = color.withValues(alpha: opacity));
       }));
     }));
   }
@@ -99,7 +99,7 @@ class VfxManager extends Component with HasGameRef {
       return AcceleratedParticle(position: position.clone(), speed: Vector2(cos(angle), sin(angle)) * speed, acceleration: Vector2(0, 35), child: ComputedParticle(renderer: (canvas, particle) {
         final opacity = (1.0 - particle.progress).clamp(0.0, 1.0); final size = 3 * (1.0 - particle.progress * 0.5);
         final path = Path(); for (int j = 0; j < 4; j++) { final a = (j * pi / 2); if (j == 0) path.moveTo(cos(a) * size, sin(a) * size); else path.lineTo(cos(a) * size, sin(a) * size); } path.close();
-        canvas.drawPath(path, Paint()..color = color.withOpacity(opacity));
+        canvas.drawPath(path, Paint()..color = color.withValues(alpha: opacity));
       }));
     }));
   }
@@ -109,7 +109,7 @@ class VfxManager extends Component with HasGameRef {
       final spreadX = (_random.nextDouble() - 0.5) * 25;
       return AcceleratedParticle(position: position.clone() + Vector2(spreadX, 0), speed: Vector2(0, -speed), acceleration: Vector2(0, -15), child: ComputedParticle(renderer: (canvas, particle) {
         final opacity = (1.0 - particle.progress).clamp(0.0, 1.0);
-        canvas.drawCircle(Offset.zero, 3, Paint()..color = color.withOpacity(opacity));
+        canvas.drawCircle(Offset.zero, 3, Paint()..color = color.withValues(alpha: opacity));
       }));
     }));
   }
@@ -120,7 +120,7 @@ class VfxManager extends Component with HasGameRef {
       return AcceleratedParticle(position: position.clone(), speed: Vector2(cos(angle), sin(angle)) * speed, acceleration: Vector2(0, 320), child: ComputedParticle(renderer: (canvas, particle) {
         final opacity = (1.0 - particle.progress * 0.2).clamp(0.0, 1.0);
         canvas.save(); canvas.rotate(particle.progress * 3 * pi);
-        canvas.drawOval(const Rect.fromLTWH(-3, -2, 6, 4), Paint()..color = Colors.amber.withOpacity(opacity));
+        canvas.drawOval(const Rect.fromLTWH(-3, -2, 6, 4), Paint()..color = Colors.amber.withValues(alpha: opacity));
         canvas.restore();
       }));
     }));
@@ -131,7 +131,7 @@ class VfxManager extends Component with HasGameRef {
       return AcceleratedParticle(position: position.clone() + Vector2((_random.nextDouble() - 0.5) * 30, -10), speed: Vector2((_random.nextDouble() - 0.5) * 15, -35), acceleration: Vector2(0, -15), child: ComputedParticle(renderer: (canvas, particle) {
         final opacity = (1.0 - particle.progress).clamp(0.0, 1.0); final size = 7 * (1.0 - particle.progress * 0.3);
         final path = Path(); path.moveTo(0, size * 0.3); path.cubicTo(-size, -size * 0.3, -size * 0.5, -size, 0, -size * 0.5); path.cubicTo(size * 0.5, -size, size, -size * 0.3, 0, size * 0.3);
-        canvas.drawPath(path, Paint()..color = Colors.pink.withOpacity(opacity));
+        canvas.drawPath(path, Paint()..color = Colors.pink.withValues(alpha: opacity));
       }));
     }));
   }

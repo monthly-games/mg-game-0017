@@ -223,7 +223,7 @@ class _TycoonScreenState extends State<TycoonScreen>
               margin: const EdgeInsets.only(bottom: 12),
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: _getMaterialColor(type).withOpacity(0.3),
+                  backgroundColor: _getMaterialColor(type).withValues(alpha: 0.3),
                   child: Icon(
                     _getMaterialIcon(type),
                     color: _getMaterialColor(type),
@@ -435,7 +435,7 @@ class _TycoonScreenState extends State<TycoonScreen>
     EconomyManager economy,
   ) {
     return Card(
-      color: interested ? Colors.green.withOpacity(0.2) : AppColors.panel,
+      color: interested ? Colors.green.withValues(alpha: 0.2) : AppColors.panel,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -660,7 +660,7 @@ class _TycoonScreenState extends State<TycoonScreen>
                             recipe.id,
                             economy.gold ~/ 100,
                             economy.gold,
-                            (amount) => economy.spendGold(amount),
+                            (amount) => economy.trySpendGold(amount),
                           )) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('${recipe.name} 레시피 해금!')),

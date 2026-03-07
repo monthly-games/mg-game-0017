@@ -15,7 +15,7 @@ class EconomyManager extends ChangeNotifier {
   }
 
   /// Spend gold (returns false if not enough)
-  bool spendGold(int amount) {
+  bool trySpendGold(int amount) {
     if (_gold < amount) return false;
     _gold -= amount;
     notifyListeners();

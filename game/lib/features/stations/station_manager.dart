@@ -140,7 +140,7 @@ class StationManager extends ChangeNotifier {
     final station = _stations[type]!;
 
     // Check and spend gold
-    if (!economy.spendGold(station.getUpgradeCostGold())) {
+    if (!economy.trySpendGold(station.getUpgradeCostGold())) {
       return false;
     }
 

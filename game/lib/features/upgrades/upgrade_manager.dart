@@ -43,7 +43,7 @@ class UpgradeManager extends ChangeNotifier {
 
   bool buyUpgrade(UpgradeType type) {
     final cost = getUpgradeCost(type);
-    if (_economy.spendGold(cost)) {
+    if (_economy.trySpendGold(cost)) {
       _upgradeLevels[type.name] = getLevel(type) + 1;
       notifyListeners();
       return true;
