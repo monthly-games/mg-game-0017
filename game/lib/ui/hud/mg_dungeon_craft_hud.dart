@@ -45,7 +45,7 @@ class MGDungeonCraftHud extends StatelessWidget {
                     onPressed: onPause,
                     buttonSize: MGIconButtonSize.medium,
                     backgroundColor: MGColors.surface.withAlpha(0xCC),
-                    color: Colors.white,
+                    color: MGColors.textHighEmphasis,
                   )
                 else
                   const SizedBox(width: 44),
@@ -77,7 +77,7 @@ class MGDungeonCraftHud extends StatelessWidget {
                     onPressed: onMenu,
                     buttonSize: MGIconButtonSize.medium,
                     backgroundColor: MGColors.surface.withAlpha(0xCC),
-                    color: Colors.white,
+                    color: MGColors.textHighEmphasis,
                   )
                 else
                   const SizedBox(width: 44),
@@ -119,7 +119,7 @@ class MGDungeonCraftHud extends StatelessWidget {
                     Text(
                       '$invasionProgress/$maxInvasionProgress',
                       style: MGTextStyles.hudSmall.copyWith(
-                        color: Colors.white,
+                        color: MGColors.textHighEmphasis,
                       ),
                     ),
                   ],

@@ -18,6 +18,7 @@ import '../features/achievements/achievement_manager.dart';
 import '../features/achievements/achievement_data.dart';
 import '../features/decoration/decoration_manager.dart';
 import '../features/decoration/decoration_data.dart';
+import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
 
 class TycoonScreen extends StatefulWidget {
   const TycoonScreen({super.key});
@@ -315,7 +316,7 @@ class _TycoonScreenState extends State<TycoonScreen>
             ] else if (job != null && job.isComplete) ...[
               Text(
                 '완료: ${job.recipe.name}',
-                style: const TextStyle(color: Colors.green),
+                style: const TextStyle(color: MGColors.success),
               ),
               const SizedBox(height: 8),
               ElevatedButton(
@@ -344,7 +345,7 @@ class _TycoonScreenState extends State<TycoonScreen>
                     child: Text(
                       '${recipe.name} (${recipe.craftingTime}초)',
                       style: TextStyle(
-                        color: canCraft ? Colors.white : Colors.grey,
+                        color: canCraft ? MGColors.textHighEmphasis : MGColors.common,
                       ),
                     ),
                   );
@@ -377,7 +378,7 @@ class _TycoonScreenState extends State<TycoonScreen>
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.green),
+                  border: Border.all(color: MGColors.success),
                 ),
                 child: Column(
                   children: [
@@ -435,7 +436,7 @@ class _TycoonScreenState extends State<TycoonScreen>
     EconomyManager economy,
   ) {
     return Card(
-      color: interested ? Colors.green.withValues(alpha: 0.2) : AppColors.panel,
+      color: interested ? MGColors.success.withValues(alpha: 0.2) : AppColors.panel,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -465,7 +466,7 @@ class _TycoonScreenState extends State<TycoonScreen>
                     );
                   }
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                style: ElevatedButton.styleFrom(backgroundColor: MGColors.success),
                 child: const Text('판매'),
               )
             else
@@ -486,7 +487,7 @@ class _TycoonScreenState extends State<TycoonScreen>
       color: AppColors.surface,
       child: items.isEmpty
           ? const Center(
-              child: Text('완성품 없음', style: TextStyle(color: Colors.grey)),
+              child: Text('완성품 없음', style: TextStyle(color: MGColors.common)),
             )
           : DropdownButton<CraftedItem>(
               isExpanded: true,
@@ -681,11 +682,11 @@ class _TycoonScreenState extends State<TycoonScreen>
   Color _getMaterialColor(MaterialType type) {
     switch (type) {
       case MaterialType.ironOre:
-        return Colors.grey;
+        return MGColors.common;
       case MaterialType.wood:
         return Colors.brown;
       case MaterialType.leather:
-        return Colors.orange;
+        return MGColors.warning;
       case MaterialType.magicStone:
         return Colors.purple;
       case MaterialType.rareGem:
@@ -741,15 +742,15 @@ class _TycoonScreenState extends State<TycoonScreen>
   Color _getTierColor(RecipeTier tier) {
     switch (tier) {
       case RecipeTier.basic:
-        return Colors.grey;
+        return MGColors.common;
       case RecipeTier.intermediate:
-        return Colors.green;
+        return MGColors.success;
       case RecipeTier.advanced:
-        return Colors.blue;
+        return MGColors.info;
       case RecipeTier.master:
         return Colors.purple;
       case RecipeTier.legendary:
-        return Colors.orange;
+        return MGColors.warning;
     }
   }
 
@@ -784,11 +785,11 @@ class _TycoonScreenState extends State<TycoonScreen>
   Color _getQualityColor(Quality quality) {
     switch (quality) {
       case Quality.normal:
-        return Colors.grey;
+        return MGColors.common;
       case Quality.good:
-        return Colors.green;
+        return MGColors.success;
       case Quality.excellent:
-        return Colors.blue;
+        return MGColors.info;
       case Quality.masterpiece:
         return Colors.purple;
     }
@@ -860,7 +861,7 @@ class _TycoonScreenState extends State<TycoonScreen>
                 child: ListTile(
                   leading: Icon(
                     Icons.explore,
-                    color: unlocked ? AppColors.primary : Colors.grey,
+                    color: unlocked ? AppColors.primary : MGColors.common,
                   ),
                   title: Text(dungeon.getDungeonName(depth)),
                   subtitle: Text(
@@ -913,7 +914,7 @@ class _TycoonScreenState extends State<TycoonScreen>
                     if (unclaimed.isNotEmpty)
                       Text(
                         '수령 대기중: ${unclaimed.length}개',
-                        style: TextStyle(color: Colors.orange),
+                        style: TextStyle(color: MGColors.warning),
                       ),
                   ],
                 ),
@@ -935,8 +936,8 @@ class _TycoonScreenState extends State<TycoonScreen>
                   leading: Icon(
                     claimed ? Icons.check_circle : Icons.emoji_events,
                     color: claimed
-                        ? Colors.green
-                        : (canClaim ? Colors.orange : Colors.grey),
+                        ? MGColors.success
+                        : (canClaim ? MGColors.warning : MGColors.common),
                   ),
                   title: Text(progress.achievement.name),
                   subtitle: Text(
@@ -969,7 +970,7 @@ class _TycoonScreenState extends State<TycoonScreen>
                           child: const Text('수령'),
                         )
                       : (claimed
-                            ? const Icon(Icons.check, color: Colors.green)
+                            ? const Icon(Icons.check, color: MGColors.success)
                             : null),
                 ),
               );

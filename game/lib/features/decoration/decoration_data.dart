@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
 
 /// Decoration category
 enum DecorationType {
@@ -41,7 +42,7 @@ class Decorations {
     description: '전통적인 대장간 분위기',
     type: DecorationType.theme,
     goldCost: 0,
-    primaryColor: Color(0xFF8B4513),
+    primaryColor: MGColors.warning,
     secondaryColor: Color(0xFF654321),
   );
 
@@ -72,7 +73,7 @@ class Decorations {
     type: DecorationType.theme,
     goldCost: 2000,
     gemCost: 10,
-    primaryColor: Color(0xFFFFD700),
+    primaryColor: MGColors.gold,
     secondaryColor: Color(0xFFFFA500),
   );
 
@@ -83,7 +84,7 @@ class Decorations {
     description: '기본 나무 카운터',
     type: DecorationType.counter,
     goldCost: 0,
-    primaryColor: Color(0xFF8B4513),
+    primaryColor: MGColors.warning,
   );
 
   static const Decoration marbleCounter = Decoration(
@@ -112,7 +113,7 @@ class Decorations {
     description: '튼튼한 돌 바닥',
     type: DecorationType.floor,
     goldCost: 0,
-    primaryColor: Color(0xFF808080),
+    primaryColor: MGColors.common,
   );
 
   static const Decoration woodFloor = Decoration(
@@ -130,7 +131,7 @@ class Decorations {
     description: '부드러운 카펫',
     type: DecorationType.floor,
     goldCost: 600,
-    primaryColor: Color(0xFFDC143C),
+    primaryColor: MGColors.error,
   );
 
   // Wall decorations
