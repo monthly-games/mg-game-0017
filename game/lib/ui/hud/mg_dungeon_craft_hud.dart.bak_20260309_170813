@@ -10,7 +10,6 @@ class MGDungeonCraftHud extends StatelessWidget {
   final int maxInvasionProgress;
   final VoidCallback? onPause;
   final VoidCallback? onMenu;
-  final VoidCallback? onDailyHub;
 
   const MGDungeonCraftHud({
     super.key,
@@ -20,7 +19,6 @@ class MGDungeonCraftHud extends StatelessWidget {
     this.maxInvasionProgress = 100,
     this.onPause,
     this.onMenu,
-    this.onDailyHub,
   });
 
   @override
@@ -41,13 +39,6 @@ class MGDungeonCraftHud extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // 일시정지 버튼
-                if (onDailyHub != null)
-                  MGIconButton(
-                    icon: Icons.calendar_today,
-                    onPressed: onDailyHub!,
-                    buttonSize: MGIconButtonSize.small,
-                  ),
-                const SizedBox(width: MGSpacing.xs),
                 if (onPause != null)
                   MGIconButton(
                     icon: Icons.pause,
