@@ -2,7 +2,7 @@
 library;
 
 import 'package:flutter/foundation.dart';
-import 'package:mg_common_game/systems/gacha/gacha_config.dart';
+import 'package:mg_common_game/systems/gacha/gacha_pool.dart';
 import 'package:mg_common_game/systems/gacha/gacha_manager.dart';
 
 /// 게임 내 Equipment 모델
@@ -42,7 +42,7 @@ class EquipmentGachaAdapter extends ChangeNotifier {
   void _initPool() {
     final pool = GachaPool(
       id: _poolId,
-      name: 'Dungeon Craft 가챠',
+      nameKr: 'Dungeon Craft 가챠',
       items: _generateItems(),
       startDate: DateTime.now().subtract(const Duration(days: 1)),
       endDate: DateTime.now().add(const Duration(days: 365)),
@@ -53,30 +53,30 @@ class EquipmentGachaAdapter extends ChangeNotifier {
   List<GachaItem> _generateItems() {
     return [
       // UR (0.6%)
-      GachaItem(id: 'ur_dungeoncraft_001', name: '전설의 Equipment', rarity: GachaRarity.ultraRare, weight: 1.0),
-      GachaItem(id: 'ur_dungeoncraft_002', name: '신화의 Equipment', rarity: GachaRarity.ultraRare, weight: 1.0),
+      GachaItem(id: 'ur_dungeoncraft_001', nameKr: '전설의 Equipment', rarity: GachaRarity.ultraRare),
+      GachaItem(id: 'ur_dungeoncraft_002', nameKr: '신화의 Equipment', rarity: GachaRarity.ultraRare),
       // SSR (2.4%)
-      GachaItem(id: 'ssr_dungeoncraft_001', name: '영웅의 Equipment', rarity: GachaRarity.superSuperRare, weight: 1.0),
-      GachaItem(id: 'ssr_dungeoncraft_002', name: '고대의 Equipment', rarity: GachaRarity.superSuperRare, weight: 1.0),
-      GachaItem(id: 'ssr_dungeoncraft_003', name: '황금의 Equipment', rarity: GachaRarity.superSuperRare, weight: 1.0),
+      GachaItem(id: 'ssr_dungeoncraft_001', nameKr: '영웅의 Equipment', rarity: GachaRarity.superRare),
+      GachaItem(id: 'ssr_dungeoncraft_002', nameKr: '고대의 Equipment', rarity: GachaRarity.superRare),
+      GachaItem(id: 'ssr_dungeoncraft_003', nameKr: '황금의 Equipment', rarity: GachaRarity.superRare),
       // SR (12%)
-      GachaItem(id: 'sr_dungeoncraft_001', name: '희귀한 Equipment A', rarity: GachaRarity.superRare, weight: 1.0),
-      GachaItem(id: 'sr_dungeoncraft_002', name: '희귀한 Equipment B', rarity: GachaRarity.superRare, weight: 1.0),
-      GachaItem(id: 'sr_dungeoncraft_003', name: '희귀한 Equipment C', rarity: GachaRarity.superRare, weight: 1.0),
-      GachaItem(id: 'sr_dungeoncraft_004', name: '희귀한 Equipment D', rarity: GachaRarity.superRare, weight: 1.0),
+      GachaItem(id: 'sr_dungeoncraft_001', nameKr: '희귀한 Equipment A', rarity: GachaRarity.superRare),
+      GachaItem(id: 'sr_dungeoncraft_002', nameKr: '희귀한 Equipment B', rarity: GachaRarity.superRare),
+      GachaItem(id: 'sr_dungeoncraft_003', nameKr: '희귀한 Equipment C', rarity: GachaRarity.superRare),
+      GachaItem(id: 'sr_dungeoncraft_004', nameKr: '희귀한 Equipment D', rarity: GachaRarity.superRare),
       // R (35%)
-      GachaItem(id: 'r_dungeoncraft_001', name: '우수한 Equipment A', rarity: GachaRarity.rare, weight: 1.0),
-      GachaItem(id: 'r_dungeoncraft_002', name: '우수한 Equipment B', rarity: GachaRarity.rare, weight: 1.0),
-      GachaItem(id: 'r_dungeoncraft_003', name: '우수한 Equipment C', rarity: GachaRarity.rare, weight: 1.0),
-      GachaItem(id: 'r_dungeoncraft_004', name: '우수한 Equipment D', rarity: GachaRarity.rare, weight: 1.0),
-      GachaItem(id: 'r_dungeoncraft_005', name: '우수한 Equipment E', rarity: GachaRarity.rare, weight: 1.0),
+      GachaItem(id: 'r_dungeoncraft_001', nameKr: '우수한 Equipment A', rarity: GachaRarity.rare),
+      GachaItem(id: 'r_dungeoncraft_002', nameKr: '우수한 Equipment B', rarity: GachaRarity.rare),
+      GachaItem(id: 'r_dungeoncraft_003', nameKr: '우수한 Equipment C', rarity: GachaRarity.rare),
+      GachaItem(id: 'r_dungeoncraft_004', nameKr: '우수한 Equipment D', rarity: GachaRarity.rare),
+      GachaItem(id: 'r_dungeoncraft_005', nameKr: '우수한 Equipment E', rarity: GachaRarity.rare),
       // N (50%)
-      GachaItem(id: 'n_dungeoncraft_001', name: '일반 Equipment A', rarity: GachaRarity.normal, weight: 1.0),
-      GachaItem(id: 'n_dungeoncraft_002', name: '일반 Equipment B', rarity: GachaRarity.normal, weight: 1.0),
-      GachaItem(id: 'n_dungeoncraft_003', name: '일반 Equipment C', rarity: GachaRarity.normal, weight: 1.0),
-      GachaItem(id: 'n_dungeoncraft_004', name: '일반 Equipment D', rarity: GachaRarity.normal, weight: 1.0),
-      GachaItem(id: 'n_dungeoncraft_005', name: '일반 Equipment E', rarity: GachaRarity.normal, weight: 1.0),
-      GachaItem(id: 'n_dungeoncraft_006', name: '일반 Equipment F', rarity: GachaRarity.normal, weight: 1.0),
+      GachaItem(id: 'n_dungeoncraft_001', nameKr: '일반 Equipment A', rarity: GachaRarity.normal),
+      GachaItem(id: 'n_dungeoncraft_002', nameKr: '일반 Equipment B', rarity: GachaRarity.normal),
+      GachaItem(id: 'n_dungeoncraft_003', nameKr: '일반 Equipment C', rarity: GachaRarity.normal),
+      GachaItem(id: 'n_dungeoncraft_004', nameKr: '일반 Equipment D', rarity: GachaRarity.normal),
+      GachaItem(id: 'n_dungeoncraft_005', nameKr: '일반 Equipment E', rarity: GachaRarity.normal),
+      GachaItem(id: 'n_dungeoncraft_006', nameKr: '일반 Equipment F', rarity: GachaRarity.normal),
     ];
   }
 
@@ -98,7 +98,7 @@ class EquipmentGachaAdapter extends ChangeNotifier {
   Equipment _convertToItem(GachaItem item) {
     return Equipment(
       id: item.id,
-      name: item.name,
+      name: item.nameKr,
       rarity: item.rarity,
     );
   }

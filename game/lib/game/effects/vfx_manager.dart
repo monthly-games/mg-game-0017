@@ -6,13 +6,13 @@ import 'package:flutter/material.dart';
 
 /// VFX Manager for Dungeon Craft Tycoon (MG-0017)
 /// Crafting + Idle Tycoon 게임 전용 이펙트 관리자
-class VfxManager extends Component with HasGameRef {
+class VfxManager extends Component with HasGameReference {
   VfxManager();
   final Random _random = Random();
 
   // Crafting Effects
   void showMaterialGather(Vector2 position, Color materialColor) {
-    gameRef.add(_createBurstEffect(position: position, color: materialColor, count: 10, speed: 50, lifespan: 0.4));
+    game.add(_createBurstEffect(position: position, color: materialColor, count: 10, speed: 50, lifespan: 0.4));
     showNumberPopup(position, '+1', color: materialColor);
   }
 
@@ -24,38 +24,38 @@ class VfxManager extends Component with HasGameRef {
       case 'good': color = Colors.blue; particleCount = 20; break;
       default: color = Colors.grey; particleCount = 12;
     }
-    gameRef.add(_createExplosionEffect(position: position, color: color, count: particleCount, radius: quality == 'masterpiece' ? 80 : 55));
-    gameRef.add(_createSparkleEffect(position: position, color: Colors.white, count: 15));
+    game.add(_createExplosionEffect(position: position, color: color, count: particleCount, radius: quality == 'masterpiece' ? 80 : 55));
+    game.add(_createSparkleEffect(position: position, color: Colors.white, count: 15));
     if (quality == 'masterpiece' || quality == 'excellent') {
-      gameRef.add(_QualityText(position: position, quality: quality));
+      game.add(_QualityText(position: position, quality: quality));
     }
   }
 
   void showCraftingProgress(Vector2 position) {
-    gameRef.add(_createRisingEffect(position: position, color: Colors.orange, count: 5, speed: 40));
+    game.add(_createRisingEffect(position: position, color: Colors.orange, count: 5, speed: 40));
   }
 
   void showRecipeUnlock(Vector2 position) {
-    gameRef.add(_createExplosionEffect(position: position, color: Colors.amber, count: 30, radius: 65));
-    gameRef.add(_createSparkleEffect(position: position, color: Colors.yellow, count: 18));
-    gameRef.add(_RecipeText(position: position));
+    game.add(_createExplosionEffect(position: position, color: Colors.amber, count: 30, radius: 65));
+    game.add(_createSparkleEffect(position: position, color: Colors.yellow, count: 18));
+    game.add(_RecipeText(position: position));
   }
 
   // Shop Effects
   void showSaleSuccess(Vector2 position, int goldAmount) {
-    gameRef.add(_createCoinEffect(position: position, count: (goldAmount / 20).clamp(5, 20).toInt()));
+    game.add(_createCoinEffect(position: position, count: (goldAmount / 20).clamp(5, 20).toInt()));
     showNumberPopup(position, '+$goldAmount G', color: Colors.amber);
   }
 
   void showCustomerSatisfied(Vector2 position) {
-    gameRef.add(_createHeartEffect(position: position));
-    gameRef.add(_createRisingEffect(position: position, color: Colors.pink.shade200, count: 5, speed: 35));
+    game.add(_createHeartEffect(position: position));
+    game.add(_createRisingEffect(position: position, color: Colors.pink.shade200, count: 5, speed: 35));
   }
 
   void showShopUpgrade(Vector2 position) {
-    gameRef.add(_createExplosionEffect(position: position, color: Colors.green, count: 35, radius: 70));
-    gameRef.add(_createSparkleEffect(position: position, color: Colors.lightGreen, count: 15));
-    gameRef.add(_UpgradeText(position: position));
+    game.add(_createExplosionEffect(position: position, color: Colors.green, count: 35, radius: 70));
+    game.add(_createSparkleEffect(position: position, color: Colors.lightGreen, count: 15));
+    game.add(_UpgradeText(position: position));
   }
 
   // Tycoon Effects
@@ -63,13 +63,13 @@ class VfxManager extends Component with HasGameRef {
     for (int i = 0; i < 6; i++) {
       Future.delayed(Duration(milliseconds: i * 150), () {
         if (!isMounted) return;
-        gameRef.add(_createCoinEffect(position: centerPosition + Vector2((_random.nextDouble() - 0.5) * 150, -30), count: 8));
+        game.add(_createCoinEffect(position: centerPosition + Vector2((_random.nextDouble() - 0.5) * 150, -30), count: 8));
       });
     }
   }
 
   void showNumberPopup(Vector2 position, String text, {Color color = Colors.white}) {
-    gameRef.add(_NumberPopup(position: position, text: text, color: color));
+    game.add(_NumberPopup(position: position, text: text, color: color));
   }
 
   // Private generators
@@ -98,7 +98,11 @@ class VfxManager extends Component with HasGameRef {
       final angle = _random.nextDouble() * 2 * pi; final speed = 45 + _random.nextDouble() * 35;
       return AcceleratedParticle(position: position.clone(), speed: Vector2(cos(angle), sin(angle)) * speed, acceleration: Vector2(0, 35), child: ComputedParticle(renderer: (canvas, particle) {
         final opacity = (1.0 - particle.progress).clamp(0.0, 1.0); final size = 3 * (1.0 - particle.progress * 0.5);
-        final path = Path(); for (int j = 0; j < 4; j++) { final a = (j * pi / 2); if (j == 0) path.moveTo(cos(a) * size, sin(a) * size); else path.lineTo(cos(a) * size, sin(a) * size); } path.close();
+        final path = Path(); for (int j = 0; j < 4; j++) { final a = (j * pi / 2); if (j == 0) {
+          path.moveTo(cos(a) * size, sin(a) * size);
+        } else {
+          path.lineTo(cos(a) * size, sin(a) * size);
+        } } path.close();
         canvas.drawPath(path, Paint()..color = color.withValues(alpha: opacity));
       }));
     }));
@@ -138,7 +142,7 @@ class VfxManager extends Component with HasGameRef {
 }
 
 class _QualityText extends TextComponent {
-  _QualityText({required Vector2 position, required String quality}) : super(text: quality.toUpperCase() + '!', position: position + Vector2(0, -40), anchor: Anchor.center, textRenderer: TextPaint(style: TextStyle(fontSize: quality == 'masterpiece' ? 26 : 22, fontWeight: FontWeight.bold, color: quality == 'masterpiece' ? Colors.amber : Colors.purple, shadows: [Shadow(color: quality == 'masterpiece' ? Colors.orange : Colors.purple, blurRadius: 10)])));
+  _QualityText({required Vector2 position, required String quality}) : super(text: '${quality.toUpperCase()}!', position: position + Vector2(0, -40), anchor: Anchor.center, textRenderer: TextPaint(style: TextStyle(fontSize: quality == 'masterpiece' ? 26 : 22, fontWeight: FontWeight.bold, color: quality == 'masterpiece' ? Colors.amber : Colors.purple, shadows: [Shadow(color: quality == 'masterpiece' ? Colors.orange : Colors.purple, blurRadius: 10)])));
   @override Future<void> onLoad() async { await super.onLoad(); scale = Vector2.all(0.5); add(ScaleEffect.to(Vector2.all(1.0), EffectController(duration: 0.3, curve: Curves.elasticOut))); add(MoveByEffect(Vector2(0, -20), EffectController(duration: 1.2, curve: Curves.easeOut))); add(OpacityEffect.fadeOut(EffectController(duration: 1.2, startDelay: 0.5))); add(RemoveEffect(delay: 1.7)); }
 }
 

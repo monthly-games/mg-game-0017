@@ -1,0 +1,65 @@
+arm_R.png
+size: 4,33
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+arm_R
+  rotate: false
+  xy: 0, 0
+  size: 4, 33
+  orig: 4, 33
+  offset: 0, 0
+  index: -1
+
+body.png
+size: 158,170
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 0, 0
+  size: 158, 170
+  orig: 158, 170
+  offset: 0, 0
+  index: -1
+
+head.png
+size: 142,111
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+head
+  rotate: false
+  xy: 0, 0
+  size: 142, 111
+  orig: 142, 111
+  offset: 0, 0
+  index: -1
+
+hips.png
+size: 87,86
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+hips
+  rotate: false
+  xy: 0, 0
+  size: 87, 86
+  orig: 87, 86
+  offset: 0, 0
+  index: -1
+
+weapon.png
+size: 671,829
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+weapon
+  rotate: false
+  xy: 0, 0
+  size: 671, 829
+  orig: 671, 829
+  offset: 0, 0
+  index: -1
+

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' hide MaterialType;
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mg_common_game/core/ui/theme/app_colors.dart';
 import 'package:mg_common_game/core/ui/theme/app_text_styles.dart';
@@ -15,6 +15,9 @@ import '../features/save/save_manager.dart';
 import '../features/dungeon/dungeon_manager.dart';
 import '../features/upgrades/upgrade_manager.dart';
 import '../features/achievements/achievement_manager.dart';
+import '../features/achievements/achievement_data.dart';
+import '../features/decoration/decoration_manager.dart';
+import '../features/decoration/decoration_data.dart';
 import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
 
 class TycoonScreen extends StatefulWidget {
@@ -26,6 +29,7 @@ class TycoonScreen extends StatefulWidget {
 
 class _TycoonScreenState extends State<TycoonScreen>
     with TickerProviderStateMixin {
+  int _selectedTab = 0;
   late TabController _tabController;
 
   @override
@@ -34,6 +38,7 @@ class _TycoonScreenState extends State<TycoonScreen>
     _tabController = TabController(length: 6, vsync: this);
     _tabController.addListener(() {
       setState(() {
+        _selectedTab = _tabController.index;
       });
     });
 
@@ -103,24 +108,6 @@ class _TycoonScreenState extends State<TycoonScreen>
                 }
               });
             },
-          ),
-          IconButton(
-            icon: const Icon(Icons.shield),
-            tooltip: 'Guild War',
-            onPressed: () =>
-                Navigator.of(context).pushNamed('/guild-war'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.emoji_events),
-            tooltip: 'Tournament',
-            onPressed: () =>
-                Navigator.of(context).pushNamed('/tournament'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.celebration),
-            tooltip: 'Seasonal Event',
-            onPressed: () =>
-                Navigator.of(context).pushNamed('/seasonal-event'),
           ),
         ],
         bottom: TabBar(
@@ -704,8 +691,6 @@ class _TycoonScreenState extends State<TycoonScreen>
         return Colors.purple;
       case MaterialType.rareGem:
         return Colors.cyan;
-      default:
-        return MGColors.common;
     }
   }
 
@@ -721,8 +706,6 @@ class _TycoonScreenState extends State<TycoonScreen>
         return Icons.auto_fix_high;
       case MaterialType.rareGem:
         return Icons.diamond;
-      default:
-        return Icons.inventory_2;
     }
   }
 

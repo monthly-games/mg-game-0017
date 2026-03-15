@@ -6,15 +6,8 @@ import 'package:mg_common_game/mg_common_game.dart'
         UpgradeManager,
         SaveManager;
 import 'package:flutter/material.dart';
-import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
-import 'package:mg_common_game/systems/quests/daily_quest.dart';
-import 'package:flutter/foundation.dart';
-import 'package:mg_common_game/systems/battlepass/battlepass_config.dart';
-import 'package:mg_common_game/systems/battlepass/battlepass_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:get_it/get_it.dart';
-import 'package:mg_common_game/core/audio/audio_manager.dart';
-import 'package:mg_common_game/core/ui/theme/app_colors.dart';
 
 import 'features/materials/material_inventory.dart';
 import 'features/economy/economy_manager.dart';
@@ -28,7 +21,6 @@ import 'features/achievements/achievement_manager.dart';
 import 'features/decoration/decoration_manager.dart';
 import 'screens/tycoon_screen.dart';
 import 'screens/battlepass_screen.dart';
-import 'package:mg_common_game/systems/progression/prestige_manager.dart';
 import 'screens/daily_quest_screen.dart';
 import 'screens/achievement_screen.dart';
 import 'screens/gacha_screen.dart';

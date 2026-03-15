@@ -33,7 +33,6 @@ void main() {
 
     test('Display items', () {
       // Mock a crafted item
-      final item = CraftedItem(
         recipe: Recipes.ironSword,
         quality: Quality.normal,
       );
