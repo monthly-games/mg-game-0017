@@ -5,18 +5,17 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:flame/game.dart';
-import 'package:game/game/racer_game.dart';
 import 'package:game/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const RacerApp());
+  testWidgets('Tycoon app smoke test', (WidgetTester tester) async {
+    await tester.pumpWidget(const TycoonApp());
 
-    // Verify that the GameWidget is present.
-    expect(find.byType(GameWidget<RacerGame>), findsOneWidget);
+    expect(find.byType(MaterialApp), findsOneWidget);
+    expect(find.byType(GameWidget), findsNothing);
   });
 }

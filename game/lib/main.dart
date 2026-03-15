@@ -1,18 +1,14 @@
+import 'package:mg_common_game/mg_common_game.dart'
+    hide
+        AchievementManager,
+        CraftingManager,
+        ShopManager,
+        UpgradeManager,
+        SaveManager;
 import 'package:flutter/material.dart';
-import 'package:mg_common_game/core/ui/screens/seasonal_event_screen.dart';
-import 'package:mg_common_game/core/ui/screens/tournament_screen.dart';
-import 'package:mg_common_game/core/ui/screens/guild_war_screen.dart';
-import 'package:mg_common_game/systems/events/seasonal_content_manager.dart';
-import 'package:mg_common_game/systems/competitive/tournament_manager.dart';
-import 'package:mg_common_game/systems/social/guild_war_manager.dart';
 import 'package:mg_common_game/core/ui/theme/mg_colors.dart';
 import 'package:mg_common_game/systems/quests/daily_quest.dart';
-import 'package:mg_common_game/core/ui/screens/daily_hub_screen.dart';
-import 'package:mg_common_game/systems/retention/daily_challenge_manager.dart';
-import 'package:mg_common_game/systems/retention/streak_manager.dart';
-import 'package:mg_common_game/systems/retention/login_rewards_manager.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mg_common_game/systems/systems.dart';
 import 'package:mg_common_game/systems/battlepass/battlepass_config.dart';
 import 'package:mg_common_game/systems/battlepass/battlepass_manager.dart';
 import 'package:provider/provider.dart';
@@ -47,48 +43,46 @@ void main() async {
 }
 
 void _setupDI() {
-  if (!GetIt.I.isRegistered<AudioManager>()) {
-    GetIt.I.registerSingleton<AudioManager>(AudioManager());
-  // BattlePass 시스템
-  GetIt.I.registerSingleton(BattlePassManager());
+  final di = GetIt.I;
 
-  // Prestige 시스템 (mg_common_game)
-  if (!GetIt.I.isRegistered<PrestigeManager>()) {
+  if (!di.isRegistered<AudioManager>()) {
+    di.registerSingleton<AudioManager>(AudioManager());
+  }
+  if (!di.isRegistered<BattlePassManager>()) {
+    di.registerSingleton(BattlePassManager());
+  }
+  if (!di.isRegistered<PrestigeManager>()) {
     final prestigeManager = PrestigeManager();
-    GetIt.I.registerSingleton(prestigeManager);
-  // Collection 시스템
-  if (!GetIt.I.isRegistered<CollectionManager>()) {
-    GetIt.I.registerSingleton(CollectionManager());
-  // ── DailyQuest for DailyHub ───────────────────────────────
-  if (!GetIt.I.isRegistered<DailyQuestManager>()) {
-    GetIt.I.registerSingleton(DailyQuestManager());
-  // ── Retention Systems for DailyHub ────────────────────────
-  if (!GetIt.I.isRegistered<LoginRewardsManager>()) {
-    GetIt.I.registerSingleton(LoginRewardsManager());
-  }
-  if (!GetIt.I.isRegistered<StreakManager>()) {
-    GetIt.I.registerSingleton(StreakManager());
-  }
-  if (!GetIt.I.isRegistered<DailyChallengeManager>()) {
-    GetIt.I.registerSingleton(DailyChallengeManager());
-}
-  // ── P3 Engine Systems ─────────────────────────────────────
-  if (!GetIt.I.isRegistered<GuildWarManager>()) {
-    GetIt.I.registerSingleton(GuildWarManager());
-  }
-  if (!GetIt.I.isRegistered<TournamentManager>()) {
-    GetIt.I.registerSingleton(TournamentManager());
-  }
-  if (!GetIt.I.isRegistered<SeasonalContentManager>()) {
-    GetIt.I.registerSingleton(SeasonalContentManager());
-  }
-  }
-    _registerCollections();
-  }
+    di.registerSingleton(prestigeManager);
     _setupPrestige(prestigeManager);
   }
-  _setupBattlePass();
+  if (!di.isRegistered<CollectionManager>()) {
+    di.registerSingleton(CollectionManager());
+    _registerCollections();
   }
+  if (!di.isRegistered<DailyQuestManager>()) {
+    di.registerSingleton(DailyQuestManager());
+  }
+  if (!di.isRegistered<LoginRewardsManager>()) {
+    di.registerSingleton(LoginRewardsManager());
+  }
+  if (!di.isRegistered<StreakManager>()) {
+    di.registerSingleton(StreakManager());
+  }
+  if (!di.isRegistered<DailyChallengeManager>()) {
+    di.registerSingleton(DailyChallengeManager());
+  }
+  if (!di.isRegistered<GuildWarManager>()) {
+    di.registerSingleton(GuildWarManager());
+  }
+  if (!di.isRegistered<TournamentManager>()) {
+    di.registerSingleton(TournamentManager());
+  }
+  if (!di.isRegistered<SeasonalContentManager>()) {
+    di.registerSingleton(SeasonalContentManager());
+  }
+
+  _setupBattlePass();
 }
 
 class TycoonApp extends StatefulWidget {
@@ -328,7 +322,7 @@ void _registerCollections() {
   final collection = GetIt.I<CollectionManager>();
 
   // Characters 컬렉션
-  collection.registerCollection(const Collection(
+  collection.registerCollection(Collection(
     id: 'characters',
     name: '캐릭터',
     description: '모든 캐릭터를 수집하세요',

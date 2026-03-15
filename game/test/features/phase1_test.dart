@@ -124,10 +124,10 @@ void main() {
       economy.addGold(100);
       expect(economy.gold, 600);
 
-      expect(economy.spendGold(200), true);
+      expect(economy.trySpendGold(200), true);
       expect(economy.gold, 400);
 
-      expect(economy.spendGold(1000), false);
+      expect(economy.trySpendGold(1000), false);
       expect(economy.gold, 400);
     });
   });

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide MaterialType;
 import 'package:provider/provider.dart';
 import 'package:mg_common_game/core/ui/theme/app_colors.dart';
 import 'package:mg_common_game/core/ui/theme/app_text_styles.dart';
@@ -709,6 +709,8 @@ class _TycoonScreenState extends State<TycoonScreen>
         return Colors.purple;
       case MaterialType.rareGem:
         return Colors.cyan;
+      default:
+        return MGColors.common;
     }
   }
 
@@ -724,6 +726,8 @@ class _TycoonScreenState extends State<TycoonScreen>
         return Icons.auto_fix_high;
       case MaterialType.rareGem:
         return Icons.diamond;
+      default:
+        return Icons.inventory_2;
     }
   }
 
