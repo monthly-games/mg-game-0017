@@ -211,17 +211,15 @@ class _TycoonAppState extends State<TycoonApp> {
         home: Builder(
           builder: (context) {
             // Auto-load game when app starts
-            WidgetsBinding.instance.addPostFrameCallback((_) {
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
               final saveManager = context.read<SaveManager>();
-              saveManager.loadGame().then((loaded) {
-                if (loaded) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('게임 불러오기 완료!')));
-                }
-                // Start auto-save
-                saveManager.startAutoSave();
-              });
+              final messenger = ScaffoldMessenger.of(context);
+              final loaded = await saveManager.loadGame();
+              if (loaded) {
+                messenger.showSnackBar(const SnackBar(content: Text('게임 불러오기 완료!')));
+              }
+              // Start auto-save
+              saveManager.startAutoSave();
             });
             return const TycoonScreen();
           },
