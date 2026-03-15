@@ -32,10 +32,6 @@ void main() {
     });
 
     test('Display items', () {
-      // Mock a crafted item
-        recipe: Recipes.ironSword,
-        quality: Quality.normal,
-      );
       // Need to rely on crafting flow
       // We will produce the item properly below using instantComplete
 
