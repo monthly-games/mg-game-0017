@@ -1,13 +1,19 @@
+import 'package:mg_common_game/mg_common_game.dart'
+    hide
+        AchievementManager,
+        CraftingManager,
+        ShopManager,
+        UpgradeManager,
+        SaveManager;
+import 'package:mg_common_game/core/ui/accessibility/accessibility_settings.dart';
+// import 'package:mg_common_game/core/ui/screens/friends_screen.dart'; // Temporarily disabled
+// import 'package:mg_common_game/core/ui/screens/social_leaderboard_screen.dart'; // Temporarily disabled
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:mg_common_game/systems/systems.dart';
-import 'package:mg_common_game/systems/battlepass/battlepass_config.dart';
-import 'package:mg_common_game/systems/battlepass/battlepass_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:get_it/get_it.dart';
-import 'package:mg_common_game/core/audio/audio_manager.dart';
-import 'package:mg_common_game/core/ui/theme/app_colors.dart';
-
+import 'package:mg_common_game/core/localization/localization.dart';
+// import 'package:mg_common_game/core/social/social_initializer.dart'; // Temporarily disabled
 import 'features/materials/material_inventory.dart';
 import 'features/economy/economy_manager.dart';
 import 'features/crafting/crafting_manager.dart';
@@ -20,295 +26,430 @@ import 'features/achievements/achievement_manager.dart';
 import 'features/decoration/decoration_manager.dart';
 import 'screens/tycoon_screen.dart';
 import 'screens/battlepass_screen.dart';
-import 'package:mg_common_game/systems/progression/prestige_manager.dart';
 import 'screens/daily_quest_screen.dart';
 import 'screens/achievement_screen.dart';
 import 'screens/gacha_screen.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  _setupDI();
-  await GetIt.I<AudioManager>().initialize();
-
-  runApp(const TycoonApp());
-}
-
-void _setupDI() {
-  if (!GetIt.I.isRegistered<AudioManager>()) {
-    GetIt.I.registerSingleton<AudioManager>(AudioManager());
-  // BattlePass 시스템
-  GetIt.I.registerSingleton(BattlePassManager());
-
-  // Prestige 시스템 (mg_common_game)
-  if (!GetIt.I.isRegistered<PrestigeManager>()) {
-    final prestigeManager = PrestigeManager();
-    GetIt.I.registerSingleton(prestigeManager);
-  // Collection 시스템
-  if (!GetIt.I.isRegistered<CollectionManager>()) {
-    GetIt.I.registerSingleton(CollectionManager());
-    _registerCollections();
-  }
-    _setupPrestige(prestigeManager);
-  }
-  _setupBattlePass();
-  }
-}
-
-class TycoonApp extends StatefulWidget {
-  const TycoonApp({super.key});
-
-  @override
-  State<TycoonApp> createState() => _TycoonAppState();
-}
-
-class _TycoonAppState extends State<TycoonApp> {
-  @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => MaterialInventory()),
-        ChangeNotifierProvider(create: (_) => EconomyManager()),
-        ChangeNotifierProvider(create: (_) => StationManager()),
-        ChangeNotifierProvider(create: (_) => AchievementManager()),
-        ChangeNotifierProvider(create: (_) => DecorationManager()),
-        ChangeNotifierProxyProvider<MaterialInventory, CraftingManager>(
-          create: (context) => CraftingManager(
-            Provider.of<MaterialInventory>(context, listen: false),
-          ),
-          update: (context, inventory, previous) =>
-              previous ?? CraftingManager(inventory),
-        ),
-        ChangeNotifierProxyProvider<CraftingManager, ShopManager>(
-          create: (context) =>
-              ShopManager(Provider.of<CraftingManager>(context, listen: false)),
-          update: (context, crafting, previous) =>
-              previous ?? ShopManager(crafting),
-        ),
-        ChangeNotifierProxyProvider2<
-          MaterialInventory,
-          UpgradeManager,
-          DungeonManager
-        >(
-          create: (context) => DungeonManager(
-            Provider.of<MaterialInventory>(context, listen: false),
-            Provider.of<UpgradeManager>(context, listen: false),
-          ),
-          update: (context, inventory, upgrades, previous) =>
-              previous ?? DungeonManager(inventory, upgrades),
-        ),
-        ChangeNotifierProxyProvider<EconomyManager, UpgradeManager>(
-          create: (context) => UpgradeManager(
-            Provider.of<EconomyManager>(context, listen: false),
-          ),
-          update: (context, economy, previous) =>
-              previous ?? UpgradeManager(economy),
-        ),
-        ProxyProvider6<
-          MaterialInventory,
-          CraftingManager,
-          ShopManager,
-          EconomyManager,
-          StationManager,
-          UpgradeManager,
-          SaveManager
-        >(
-          create: (context) => SaveManager(
-            inventory: Provider.of<MaterialInventory>(context, listen: false),
-            crafting: Provider.of<CraftingManager>(context, listen: false),
-            shop: Provider.of<ShopManager>(context, listen: false),
-            economy: Provider.of<EconomyManager>(context, listen: false),
-            stations: Provider.of<StationManager>(context, listen: false),
-            upgrades: Provider.of<UpgradeManager>(context, listen: false),
-          ),
-          update:
-              (
-                context,
-                inventory,
-                crafting,
-                shop,
-                economy,
-                stations,
-                upgrades,
-                previous,
-              ) =>
-                  previous ??
-                  SaveManager(
-                    inventory: inventory,
-                    crafting: crafting,
-                    shop: shop,
-                    economy: economy,
-                    stations: stations,
-                    upgrades: upgrades,
-                  ),
-        ),
-      ],
-      child: MaterialApp(
-        title: 'Dungeon Craft Tycoon',
-        theme: ThemeData.dark().copyWith(
-          scaffoldBackgroundColor: AppColors.background,
-          primaryColor: AppColors.primary,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: AppColors.primary,
-            brightness: Brightness.dark,
-          ),
-        ),
-        routes: {
-          '/battlepass': (_) => const BattlePassScreen(),
-          '/daily_quest': (_) => const DailyQuestScreen(),
-          '/achievement': (_) => const AchievementScreen(),
-          '/gacha': (_) => const GachaScreen(),
-        },
-        home: Builder(
-          builder: (context) {
-            // Auto-load game when app starts
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              final saveManager = context.read<SaveManager>();
-              saveManager.loadGame().then((loaded) {
-                if (loaded) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('게임 불러오기 완료!')));
-                }
-                // Start auto-save
-                saveManager.startAutoSave();
-              });
-            });
-            return const TycoonScreen();
-          },
-        ),
-      ),
-    );
-  }
-}
-
-
-void _setupBattlePass() {
-  final bp = GetIt.I<BattlePassManager>();
-
-  final season = BPSeasonBuilder.create28DaySeason(
-    id: 'season_1',
-    nameKr: '시즌 1',
-    startDate: DateTime.now().subtract(const Duration(days: 1)),
-    maxLevel: 50,
-    expPerLevel: 1000,
-  );
-
-  bp.setSeason(season);
-  bp.setMissions(
-    daily: BPSeasonBuilder.createDefaultDailyMissions(),
-    weekly: BPSeasonBuilder.createDefaultWeeklyMissions(),
-  );
-}
-
-void _setupPrestige(PrestigeManager manager) {
-  // ── Prestige Upgrades (idle game defaults) ──────────────────
-  // Five core upgrades for idle games
-  manager.registerPrestigeUpgrade(PrestigeUpgrade(
-    id: 'gold_multiplier',
-    name: '골드 배수',
-    description: '골드 획득량 +10%',
-    maxLevel: 50,
-    costPerLevel: 1,
-    bonusPerLevel: 0.1,
-  ));
-
-  manager.registerPrestigeUpgrade(PrestigeUpgrade(
-    id: 'xp_boost',
-    name: 'XP 부스트',
-    description: 'XP 획득량 +15%',
-    maxLevel: 40,
-    costPerLevel: 2,
-    bonusPerLevel: 0.15,
-  ));
-
-  manager.registerPrestigeUpgrade(PrestigeUpgrade(
-    id: 'production_speed',
-    name: '생산 속도',
-    description: '생산 속도 +20%',
-    maxLevel: 30,
-    costPerLevel: 2,
-    bonusPerLevel: 0.2,
-  ));
-
-  manager.registerPrestigeUpgrade(PrestigeUpgrade(
-    id: 'starting_resources',
-    name: '초기 자원',
-    description: '초기 자원 +5%',
-    maxLevel: 60,
-    costPerLevel: 1,
-    bonusPerLevel: 0.05,
-  ));
-
-  manager.registerPrestigeUpgrade(PrestigeUpgrade(
-    id: 'offline_income',
-    name: '오프라인 수익',
-    description: '오프라인 수익 +20%',
-    maxLevel: 30,
-    costPerLevel: 3,
-    bonusPerLevel: 0.2,
-  ));
-
-  // ── Prestige Reset Callbacks ────────────────────────────────
-  // TODO: Add game-specific reset callbacks:
-  // manager.registerResetCallback(() {
-  //   if (GetIt.I.isRegistered<ProgressionManager>()) {
-  //     GetIt.I<ProgressionManager>().reset();
-  //   }
-  //   if (GetIt.I.isRegistered<UpgradeManager>()) {
-  //     GetIt.I<UpgradeManager>().reset();
-  //   }
-  // });
-}
-
-void _registerCollections() {
-  final collection = GetIt.I<CollectionManager>();
-
-  // Characters 컬렉션
-  collection.registerCollection(const Collection(
-    id: 'characters',
-    name: '캐릭터',
-    description: '모든 캐릭터를 수집하세요',
-    items: [
-      CollectionItem(
-        id: 'char_warrior',
-        name: '전사',
-        description: '강인한 근접 전투 캐릭터',
-        rarity: CollectionRarity.common,
-      ),
-      CollectionItem(
-        id: 'char_mage',
-        name: '마법사',
-        description: '강력한 마법 공격 캐릭터',
-        rarity: CollectionRarity.rare,
-      ),
-      CollectionItem(
-        id: 'char_archer',
-        name: '궁수',
-        description: '원거리 정밀 공격 캐릭터',
-        rarity: CollectionRarity.rare,
-      ),
-      CollectionItem(
-        id: 'char_assassin',
-        name: '암살자',
-        description: '치명적인 은신 공격 캐릭터',
-        rarity: CollectionRarity.epic,
-      ),
-      CollectionItem(
-        id: 'char_healer',
-        name: '힐러',
-        description: '팀을 치유하는 지원 캐릭터',
-        rarity: CollectionRarity.legendary,
-      ),
-    ],
-    completionReward: CollectionReward(gold: 10000, gems: 500, experience: 2000),
-    milestoneRewards: {
-      25: CollectionReward(gold: 1000, gems: 50),
-      50: CollectionReward(gold: 3000, gems: 150),
-      75: CollectionReward(gold: 5000, gems: 300),
-    },
-  ));
-
-  // 아이템 해제 콜백 (햅틱 피드백)
+import 'screens/collection_screen.dart';
+// // import 'game/tutorial_config.dart'; // TutorialManager not available
+// import 'game/balancing_config.dart'; // BalancingManager not available
+// import 'package:firebase_core/firebase_core.dart';
+// import 'firebase_options.dart';
+// import 'package:mg_common_game/systems/quests/daily_quest_v2.dart'; // Temporarily disabled
+// import 'package:mg_common_game/core/ui/screens/daily_quest_screen_v2.dart'; // Temporarily disabled
+// 
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+// 
+//   // Initialize Firebase Remote Config
+//         // Initialize Firebase Core
+//       try {
+//         await Firebase.initializeApp(
+//           options: DefaultFirebaseOptions.currentPlatform,
+//         );
+//         print('Firebase Core initialized successfully');
+//       } catch (e) {
+//         print('Failed to initialize Firebase Core: $e');
+//       }
+// 
+// try {
+//     final remoteConfig = FirebaseRemoteConfig.instance;
+//     await remoteConfig.setDefaults({
+//       'feature_iap_enabled': true,
+//       'feature_new_ui_enabled': false,
+//       'feature_daily_rewards_enabled': true,
+//       'feature_tutorial_enabled': true,
+//       'min_app_version': '1.0.0',
+//     });
+//     await remoteConfig.fetchAndActivate();
+//     print('Remote Config initialized successfully');
+//   } catch (e) {
+//     print('Failed to initialize Remote Config: $e');
+//   }
+// 
+//   _setupDI();
+//   await GetIt.I<AudioManager>().initialize();
+// 
+//   // ── Tutorial & Balancing ──────────────────────────────────
+//   if (!GetIt.I.isRegistered<TutorialManager>()) {
+//     final tutorialManager = TutorialManager();
+//     await tutorialManager.initialize();
+//     // Tutorial is started via startTutorial() method when needed
+//     GetIt.I.registerSingleton<TutorialManager>(tutorialManager);
+//   }
+//   // if (!GetIt.I.isRegistered<BalancingManager>()) { // Temporarily disabled - manager doesn't exist yet
+//   //   GetIt.I.registerSingleton<BalancingManager>(
+//   //     BalancingManager(defaultConfig: kDefaultBalancingConfig),
+//   //   );
+//   // }
+//   // ── Q7 DI Fix: Missing Systems ──────────────────────────
+//   if (!GetIt.I.isRegistered<BattlePassManager>()) {
+//     GetIt.I.registerSingleton<BattlePassManager>(BattlePassManager());
+//   }
+//   if (!GetIt.I.isRegistered<GachaManager>()) {
+//     GetIt.I.registerSingleton<GachaManager>(GachaManager());
+//   }
+//   if (!GetIt.I.isRegistered<CollectionManager>()) {
+//     GetIt.I.registerSingleton<CollectionManager>(CollectionManager());
+//   }
+//   // if (!GetIt.I.isRegistered<GuildWarManager>()) { // Temporarily disabled - manager doesn't exist yet
+//   //   GetIt.I.registerSingleton<GuildWarManager>(GuildWarManager());
+//   // }
+//   // if (!GetIt.I.isRegistered<TournamentManager>()) { // Temporarily disabled - manager doesn't exist yet
+//   //   GetIt.I.registerSingleton<TournamentManager>(TournamentManager());
+//   // }
+//   // if (!GetIt.I.isRegistered<SeasonalContentManager>()) { // Temporarily disabled - manager doesn't exist yet
+//   //   GetIt.I.registerSingleton<SeasonalContentManager>(SeasonalContentManager());
+//   // }
+//       // ── Social Systems Initialization ─────────────────────────────
+//       // await SocialInitializer.initialize( // Temporarily disabled - initializer doesn't exist yet
+//       //   playerId: 'player_' + DateTime.now().millisecondsSinceEpoch.toString(),
+//       //   playerName: 'Player',
+//       //   leaderboards: SocialInitializer.createStandardLeaderboards(
+//       //     gameId: 'mg_merge_puzzle',
+//       //     gameName: 'Merge Puzzle',
+//       //   ),
+//       //   enableFirebase: true,
+//       // );
+//       // logger.i('Social systems initialized.');
+// 
+//   runApp(const TycoonApp());
+// }
+// 
+// void _setupDI() {
+//   final di = GetIt.I;
+// 
+//   if (!di.isRegistered<AudioManager>()) {
+//     di.registerSingleton<AudioManager>(AudioManager());
+//   }
+//   if (!di.isRegistered<BattlePassManager>()) {
+//     di.registerSingleton(BattlePassManager());
+//   }
+//   if (!di.isRegistered<PrestigeManager>()) {
+//     final prestigeManager = PrestigeManager();
+//     di.registerSingleton(prestigeManager);
+//     _setupPrestige(prestigeManager);
+//   }
+//   if (!di.isRegistered<CollectionManager>()) {
+//     di.registerSingleton(CollectionManager());
+//     _registerCollections();
+//   }
+//   if (!di.isRegistered<DailyQuestManager>()) {
+//     di.registerSingleton(DailyQuestManager());
+//   }
+//   if (!di.isRegistered<LoginRewardsManager>()) {
+//     di.registerSingleton(LoginRewardsManager());
+//   }
+//   if (!di.isRegistered<StreakManager>()) {
+//     di.registerSingleton(StreakManager());
+//   }
+//   if (!di.isRegistered<DailyChallengeManager>()) {
+//     di.registerSingleton(DailyChallengeManager());
+//   }
+//   // if (!di.isRegistered<GuildWarManager>()) { // Temporarily disabled
+//   //   di.registerSingleton(GuildWarManager());
+//   // }
+//   // if (!di.isRegistered<TournamentManager>()) { // Temporarily disabled
+//   //   di.registerSingleton(TournamentManager());
+//   // }
+//   // if (!di.isRegistered<SeasonalContentManager>()) { // Temporarily disabled
+//   //   di.registerSingleton(SeasonalContentManager());
+//   // }
+// 
+//   _setupBattlePass();
+// }
+// 
+// class TycoonApp extends StatefulWidget {
+//   const TycoonApp({super.key});
+// 
+//   @override
+//   State<TycoonApp> createState() => _TycoonAppState();
+// }
+// 
+// class _TycoonAppState extends State<TycoonApp> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return MultiProvider(
+//       providers: [
+//         ChangeNotifierProvider(create: (_) => MaterialInventory()),
+//         ChangeNotifierProvider(create: (_) => EconomyManager()),
+//         ChangeNotifierProvider(create: (_) => StationManager()),
+//         ChangeNotifierProvider(create: (_) => AchievementManager()),
+//         ChangeNotifierProvider(create: (_) => DecorationManager()),
+//         ChangeNotifierProxyProvider<MaterialInventory, CraftingManager>(
+//           create: (context) => CraftingManager(
+//             Provider.of<MaterialInventory>(context, listen: false),
+//           ),
+//           update: (context, inventory, previous) =>
+//               previous ?? CraftingManager(inventory),
+//         ),
+//         ChangeNotifierProxyProvider<CraftingManager, ShopManager>(
+//           create: (context) =>
+//               ShopManager(Provider.of<CraftingManager>(context, listen: false)),
+//           update: (context, crafting, previous) =>
+//               previous ?? ShopManager(crafting),
+//         ),
+//         ChangeNotifierProxyProvider2<
+//           MaterialInventory,
+//           UpgradeManager,
+//           DungeonManager
+//         >(
+//           create: (context) => DungeonManager(
+//             Provider.of<MaterialInventory>(context, listen: false),
+//             Provider.of<UpgradeManager>(context, listen: false),
+//           ),
+//           update: (context, inventory, upgrades, previous) =>
+//               previous ?? DungeonManager(inventory, upgrades),
+//         ),
+//         ChangeNotifierProxyProvider<EconomyManager, UpgradeManager>(
+//           create: (context) => UpgradeManager(
+//             Provider.of<EconomyManager>(context, listen: false),
+//           ),
+//           update: (context, economy, previous) =>
+//               previous ?? UpgradeManager(economy),
+//         ),
+//         ProxyProvider6<
+//           MaterialInventory,
+//           CraftingManager,
+//           ShopManager,
+//           EconomyManager,
+//           StationManager,
+//           UpgradeManager,
+//           SaveManager
+//         >(
+//           create: (context) => SaveManager(
+//             inventory: Provider.of<MaterialInventory>(context, listen: false),
+//             crafting: Provider.of<CraftingManager>(context, listen: false),
+//             shop: Provider.of<ShopManager>(context, listen: false),
+//             economy: Provider.of<EconomyManager>(context, listen: false),
+//             stations: Provider.of<StationManager>(context, listen: false),
+//             upgrades: Provider.of<UpgradeManager>(context, listen: false),
+//           ),
+//           update:
+//               (
+//                 context,
+//                 inventory,
+//                 crafting,
+//                 shop,
+//                 economy,
+//                 stations,
+//                 upgrades,
+//                 previous,
+//               ) =>
+//                   previous ??
+//                   SaveManager(
+//                     inventory: inventory,
+//                     crafting: crafting,
+//                     shop: shop,
+//                     economy: economy,
+//                     stations: stations,
+//                     upgrades: upgrades,
+//                   ),
+//         ),
+//       ],
+//       child: MaterialApp(
+//         title: 'Dungeon Craft Tycoon',
+//         supportedLocales: mgSupportedLocales,
+//         localizationsDelegates: mgLocalizationDelegates,
+//         theme: ThemeData.dark().copyWith(
+//           scaffoldBackgroundColor: AppColors.background,
+//           primaryColor: AppColors.primary,
+//           colorScheme: ColorScheme.fromSeed(
+//             seedColor: AppColors.primary,
+//             brightness: Brightness.dark,
+//           ),
+//         ),
+//         routes: {
+//           '/battlepass': (_) => const BattlePassScreen(),
+//           '/daily_quest': (_) => const DailyQuestScreen(),
+//           '/achievement': (_) => const AchievementScreen(),
+//           '/gacha': (_) => const GachaScreen(),
+//           '/daily-hub': (context) => DailyHubScreen(
+//             questManager: GetIt.I<DailyQuestManager>(),
+//             loginRewardsManager: GetIt.I<LoginRewardsManager>(),
+//             streakManager: GetIt.I<StreakManager>(),
+//             challengeManager: GetIt.I<DailyChallengeManager>(),
+//             accentColor: MGColors.primaryAction,
+//             onClose: () => Navigator.pop(context),
+//           ),
+//           '/collection': (context) => CollectionScreen(
+//             collectionManager: GetIt.I<CollectionManager>(),
+//           ),
+//           // '/guild-war': (context) => GuildWarScreen( // Temporarily disabled
+//           //   guildWarManager: GetIt.I<GuildWarManager>(),
+//           //   accentColor: MGColors.primaryAction,
+//           //   onClose: () => Navigator.pop(context),
+//           // ),
+//           // '/tournament': (context) => TournamentScreen( // Temporarily disabled
+//           //   tournamentManager: GetIt.I<TournamentManager>(),
+//           //   accentColor: MGColors.primaryAction,
+//           //   onClose: () => Navigator.pop(context),
+//           // ),
+//           // '/seasonal-event': (context) => SeasonalEventScreen( // Temporarily disabled
+//           //   seasonalContentManager: GetIt.I<SeasonalContentManager>(),
+//           //   accentColor: MGColors.primaryAction,
+//           //   onClose: () => Navigator.pop(context),
+//           // ),
+//           // '/friends': (context) => FriendsScreen( // Temporarily disabled
+//           //   title: 'FRIENDS',
+//           //   onClose: () => Navigator.pop(context),
+//           //   accentColor: MGColors.primaryAction,
+//           // ),
+//           // '/leaderboard': (context) => SocialLeaderboardScreen( // Temporarily disabled
+//           //   title: 'LEADERBOARD',
+//           //   leaderboardId: 'mg_pinball_all_time',
+//           //   onClose: () => Navigator.pop(context),
+//           //   accentColor: MGColors.primaryAction,
+//           // ),
+//         },
+//         home: Builder(
+//           builder: (context) {
+//             // Auto-load game when app starts
+//             WidgetsBinding.instance.addPostFrameCallback((_) async {
+//               final saveManager = context.read<SaveManager>();
+//               final messenger = ScaffoldMessenger.of(context);
+//               final loaded = await saveManager.loadGame();
+//               if (loaded) {
+//                 messenger.showSnackBar(const SnackBar(content: Text('Game loaded successfully')));
+//               }
+//               // Start auto-save
+//               saveManager.startAutoSave();
+//             });
+//             return const TycoonScreen();
+//           },
+//         ),
+//       ),
+//     );
+//   }
+// }
+// 
+// 
+// void _setupBattlePass() {
+//   final bp = GetIt.I<BattlePassManager>();
+// 
+//   final season = BPSeasonBuilder.create28DaySeason(
+//     id: 'season_1',
+//     nameKr: '시즌 1',
+//     startDate: DateTime.now().subtract(const Duration(days: 1)),
+//     maxLevel: 50,
+//     expPerLevel: 1000,
+//   );
+// 
+//   bp.setSeason(season);
+//   bp.setMissions(
+//     daily: BPSeasonBuilder.createDefaultDailyMissions(),
+//     weekly: BPSeasonBuilder.createDefaultWeeklyMissions(),
+//   );
+// }
+// 
+// void _setupPrestige(PrestigeManager manager) {
+//   // ── Prestige Upgrades (idle game defaults) ──────────────────
+//   // Five core upgrades for idle games
+//   manager.registerPrestigeUpgrade(PrestigeUpgrade(
+//     id: 'gold_multiplier',
+//     name: '골드 배수',
+//     description: '골드 획득량 +10%',
+//     maxLevel: 50,
+//     costPerLevel: 1,
+//     bonusPerLevel: 0.1,
+//   ));
+// 
+//   manager.registerPrestigeUpgrade(PrestigeUpgrade(
+//     id: 'xp_boost',
+//     name: 'XP 부스트',
+//     description: 'XP 획득량 +15%',
+//     maxLevel: 40,
+//     costPerLevel: 2,
+//     bonusPerLevel: 0.15,
+//   ));
+// 
+//   manager.registerPrestigeUpgrade(PrestigeUpgrade(
+//     id: 'production_speed',
+//     name: '생산 속도',
+//     description: '생산 속도 +20%',
+//     maxLevel: 30,
+//     costPerLevel: 2,
+//     bonusPerLevel: 0.2,
+//   ));
+// 
+//   manager.registerPrestigeUpgrade(PrestigeUpgrade(
+//     id: 'starting_resources',
+//     name: '초기 자원',
+//     description: '초기 자원 +5%',
+//     maxLevel: 60,
+//     costPerLevel: 1,
+//     bonusPerLevel: 0.05,
+//   ));
+// 
+//   manager.registerPrestigeUpgrade(PrestigeUpgrade(
+//     id: 'offline_income',
+//     name: '오프라인 수익',
+//     description: '오프라인 수익 +20%',
+//     maxLevel: 30,
+//     costPerLevel: 3,
+//     bonusPerLevel: 0.2,
+//   ));
+// 
+//   // ── Prestige Reset Callbacks ────────────────────────────────
+//   // TODO: Add game-specific reset callbacks:
+//   // manager.registerResetCallback(() {
+//   //   if (GetIt.I.isRegistered<ProgressionManager>()) {
+//   //     GetIt.I<ProgressionManager>().reset();
+//   //   }
+//   //   if (GetIt.I.isRegistered<UpgradeManager>()) {
+//   //     GetIt.I<UpgradeManager>().reset();
+//   //   }
+//   // });
+// }
+// 
+// void _registerCollections() {
+//   final collection = GetIt.I<CollectionManager>();
+// 
+//   // Characters 컬렉션
+//   collection.registerCollection(Collection(
+//     id: 'characters',
+//     name: '캐릭터',
+//     description: '모든 캐릭터를 수집하세요',
+//     items: [
+//       CollectionItem(
+//         id: 'char_warrior',
+//         name: '전사',
+//         description: '강인한 근접 전투 캐릭터',
+//         rarity: CollectionRarity.common,
+//       ),
+//       CollectionItem(
+//         id: 'char_mage',
+//         name: '마법사',
+//         description: '강력한 마법 공격 캐릭터',
+//         rarity: CollectionRarity.rare,
+//       ),
+//       CollectionItem(
+//         id: 'char_archer',
+//         name: '궁수',
+//         description: '원거리 정밀 공격 캐릭터',
+//         rarity: CollectionRarity.rare,
+//       ),
+//       CollectionItem(
+//         id: 'char_assassin',
+//         name: '암살자',
+//         description: '치명적인 은신 공격 캐릭터',
+//         rarity: CollectionRarity.epic,
+//       ),
+//       CollectionItem(
+//         id: 'char_healer',
+//         name: '힐러',
+//         description: '팀을 치유하는 지원 캐릭터',
+//         rarity: CollectionRarity.legendary,
+//       ),
+//     ],
+//     completionReward: CollectionReward(type: RewardType.gold, amount: 10000),
+//     milestoneRewards: {
+//       25: CollectionReward(type: RewardType.gold, amount: 1000),
+//       50: CollectionReward(type: RewardType.gold, amount: 3000),
+//       75: CollectionReward(type: RewardType.gold, amount: 5000),
+//     },
+//   ));
+// 
+//   // 아이템 해제 콜백 (햅틱 피드백)
   collection.onItemUnlocked = (collectionId, itemId) {
     // SettingsManager가 등록되어 있으면 햅틱 피드백
     debugPrint('Collection item unlocked: $collectionId / $itemId');

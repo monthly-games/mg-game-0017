@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:mg_common_game/core/localization/localization.dart';
 import '../economy/economy_manager.dart';
 
 enum UpgradeType { explorationSpeed, lootLuck }
