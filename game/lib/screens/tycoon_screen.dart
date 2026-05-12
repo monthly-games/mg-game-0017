@@ -1,11 +1,11 @@
+import 'dart:async';
+
 import 'package:mg_common_game/core/ui/layout/mg_spacing.dart';
 import 'package:mg_common_game/core/localization/localization.dart';
 import 'package:flutter/material.dart' hide MaterialType;
 import 'package:provider/provider.dart';
 import 'package:mg_common_game/core/ui/theme/app_colors.dart';
 import 'package:mg_common_game/core/ui/theme/app_text_styles.dart';
-import 'package:mg_common_game/l10n/localization.dart';
-
 
 import '../features/materials/material_inventory.dart';
 import '../features/materials/material_data.dart';
@@ -31,14 +31,14 @@ class TycoonScreen extends StatefulWidget {
 class _TycoonScreenState extends State<TycoonScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  Timer? _gameLoopTimer;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
     _tabController.addListener(() {
-      setState(() {
-      });
+      setState(() {});
     });
 
     // Start game loop for idle production
@@ -46,7 +46,8 @@ class _TycoonScreenState extends State<TycoonScreen>
   }
 
   void _startGameLoop() {
-    Future.delayed(const Duration(seconds: 1), () {
+    _gameLoopTimer?.cancel();
+    _gameLoopTimer = Timer(const Duration(seconds: 1), () {
       if (mounted) {
         final inventory = context.read<MaterialInventory>();
         final crafting = context.read<CraftingManager>();
@@ -65,6 +66,7 @@ class _TycoonScreenState extends State<TycoonScreen>
 
   @override
   void dispose() {
+    _gameLoopTimer?.cancel();
     _tabController.dispose();
     super.dispose();
   }
@@ -84,7 +86,9 @@ class _TycoonScreenState extends State<TycoonScreen>
               final messenger = ScaffoldMessenger.of(context);
               final success = await saveManager.saveGame();
               if (success && mounted) {
-                messenger.showSnackBar(const SnackBar(content: Text('ui_general_게임_저장_완료'.tr)));
+                messenger.showSnackBar(
+                  const SnackBar(content: Text('Game saved')),
+                );
               }
             },
           ),
@@ -96,10 +100,12 @@ class _TycoonScreenState extends State<TycoonScreen>
               final messenger = ScaffoldMessenger.of(context);
               final success = await saveManager.loadGame();
               if (success && mounted) {
-                messenger.showSnackBar(const SnackBar(content: Text('ui_general_게임_불러오기_완료'.tr)));
+                messenger.showSnackBar(
+                  const SnackBar(content: Text('Game loaded')),
+                );
               } else if (mounted) {
                 messenger.showSnackBar(
-                  const SnackBar(content: Text('ui_general_저장된_게임이_없습니다'.tr)),
+                  const SnackBar(content: Text('No saved game found')),
                 );
               }
             },
@@ -107,20 +113,17 @@ class _TycoonScreenState extends State<TycoonScreen>
           IconButton(
             icon: const Icon(Icons.shield),
             tooltip: 'Guild War',
-            onPressed: () =>
-                Navigator.of(context).pushNamed('/guild-war'),
+            onPressed: () => Navigator.of(context).pushNamed('/guild-war'),
           ),
           IconButton(
             icon: const Icon(Icons.emoji_events),
             tooltip: 'Tournament',
-            onPressed: () =>
-                Navigator.of(context).pushNamed('/tournament'),
+            onPressed: () => Navigator.of(context).pushNamed('/tournament'),
           ),
           IconButton(
             icon: const Icon(Icons.celebration),
             tooltip: 'Seasonal Event',
-            onPressed: () =>
-                Navigator.of(context).pushNamed('/seasonal-event'),
+            onPressed: () => Navigator.of(context).pushNamed('/seasonal-event'),
           ),
         ],
         bottom: TabBar(
@@ -237,7 +240,9 @@ class _TycoonScreenState extends State<TycoonScreen>
               margin: const EdgeInsets.only(bottom: 12),
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: _getMaterialColor(type).withValues(alpha: 0.3),
+                  backgroundColor: _getMaterialColor(
+                    type,
+                  ).withValues(alpha: 0.3),
                   child: Icon(
                     _getMaterialIcon(type),
                     color: _getMaterialColor(type),
@@ -358,7 +363,9 @@ class _TycoonScreenState extends State<TycoonScreen>
                     child: Text(
                       '${recipe.name} (${recipe.craftingTime}초)',
                       style: TextStyle(
-                        color: canCraft ? MGColors.textHighEmphasis : MGColors.common,
+                        color: canCraft
+                            ? MGColors.textHighEmphasis
+                            : MGColors.common,
                       ),
                     ),
                   );
@@ -449,7 +456,9 @@ class _TycoonScreenState extends State<TycoonScreen>
     EconomyManager economy,
   ) {
     return Card(
-      color: interested ? MGColors.success.withValues(alpha: 0.2) : AppColors.panel,
+      color: interested
+          ? MGColors.success.withValues(alpha: 0.2)
+          : AppColors.panel,
       child: Padding(
         padding: const EdgeInsets.all(MGSpacing.sm),
         child: Column(
@@ -479,7 +488,9 @@ class _TycoonScreenState extends State<TycoonScreen>
                     );
                   }
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: MGColors.success),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: MGColors.success,
+                ),
                 child: Text('shop_재고_count개_판매가_itembasepriceg'.tr),
               )
             else
@@ -564,7 +575,7 @@ class _TycoonScreenState extends State<TycoonScreen>
                       margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
                         leading: Icon(icon, color: Colors.amber),
-                        title: Text('progress_name_lvlevel'.tr),
+                        title: Text('$name Lv.$level'),
                         subtitle: Text(
                           '$desc\n비용: $cost 골드',
                           style: AppTextStyles.caption,
@@ -575,14 +586,12 @@ class _TycoonScreenState extends State<TycoonScreen>
                               ? () {
                                   if (upgrades.buyUpgrade(type)) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('ui_general_name_업그레이드_완료'.tr),
-                                      ),
+                                      SnackBar(content: Text('$name upgraded')),
                                     );
                                   }
                                 }
                               : null,
-                          child: Text('ui_general_탐험_업그레이드'.tr),
+                          child: const Text('Upgrade'),
                         ),
                       ),
                     );
@@ -628,7 +637,9 @@ class _TycoonScreenState extends State<TycoonScreen>
                             )) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('ui_general_datagetname_업그레이드_완료'.tr),
+                                  content: Text(
+                                    'ui_general_datagetname_업그레이드_완료'.tr,
+                                  ),
                                 ),
                               );
                             }
@@ -677,7 +688,11 @@ class _TycoonScreenState extends State<TycoonScreen>
                             (amount) => economy.trySpendGold(amount),
                           )) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('ui_general_recipename_레시피_해금'.tr)),
+                              SnackBar(
+                                content: Text(
+                                  'ui_general_recipename_레시피_해금'.tr,
+                                ),
+                              ),
                             );
                           }
                         },
@@ -852,7 +867,9 @@ class _TycoonScreenState extends State<TycoonScreen>
                                   )
                                   .join(', ');
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('notification_획득_rewardtext'.tr)),
+                                SnackBar(
+                                  content: Text('$rewardText collected'),
+                                ),
                               );
                             }
                           },

@@ -1,9 +1,7 @@
 // import 'package:mg_common_game/systems/balancing/balancing.dart'; // Temporarily disabled - module doesn't exist yet
 
-/// Default balancing configuration for MG-0017: Dungeon Craft Tycoon.
-///
-/// Placeholder values -- override via RemoteConfig using
-/// BalancingManager.loadFromRemote in production.
+// Default balancing configuration for MG-0017: Dungeon Craft Tycoon.
+// Placeholder values can be overridden via RemoteConfig in production.
 // const kDefaultBalancingConfig = BalancingConfig(
 //   gameId: 'mg-0017',
 //   version: 1,

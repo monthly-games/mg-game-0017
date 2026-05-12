@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:mg_common_game/core/localization/localization.dart';
 import '../crafting/recipe_data.dart';
 import '../materials/material_data.dart';
 import '../economy/economy_manager.dart';
