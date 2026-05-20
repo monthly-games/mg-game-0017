@@ -1,468 +1,434 @@
-import 'package:mg_common_game/mg_common_game.dart' as mg_common_game
-    hide
-        CraftingManager,
-        ShopManager,
-        UpgradeManager,
-        SaveManager;
-
-import 'package:mg_common_game/systems/progression/achievement_manager.dart' show AchievementManager;
-import 'package:mg_common_game/core/ui/accessibility/accessibility_settings.dart';
-// import 'package:mg_common_game/core/ui/screens/friends_screen.dart'; // Temporarily disabled
-// import 'package:mg_common_game/core/ui/screens/social_leaderboard_screen.dart'; // Temporarily disabled
-import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:get_it/get_it.dart';
-import 'package:mg_common_game/core/localization/localization.dart';
-// import 'package:mg_common_game/core/social/social_initializer.dart'; // Temporarily disabled
-import 'features/materials/material_inventory.dart';
-import 'features/economy/economy_manager.dart';
-import 'features/crafting/crafting_manager.dart';
-import 'features/shop/shop_manager.dart';
-import 'features/stations/station_manager.dart';
-import 'features/save/save_manager.dart';
-import 'features/dungeon/dungeon_manager.dart';
-import 'features/upgrades/upgrade_manager.dart';
-import 'features/achievements/achievement_manager.dart';
-import 'features/decoration/decoration_manager.dart';
-import 'screens/tycoon_screen.dart';
-import 'screens/battlepass_screen.dart';
-import 'screens/daily_quest_screen.dart';
-import 'screens/achievement_screen.dart';
-import 'screens/gacha_screen.dart';
-import 'screens/collection_screen.dart';
-// // import 'game/tutorial_config.dart'; // TutorialManager not available
-// import 'game/balancing_config.dart'; // BalancingManager not available
-// import 'package:firebase_core/firebase_core.dart';
-// import 'firebase_options.dart';
-// import 'package:mg_common_game/systems/quests/daily_quest_v2.dart'; // Temporarily disabled
-// import 'package:mg_common_game/core/ui/screens/daily_quest_screen_v2.dart'; // Temporarily disabled
-// 
-void main() async {
-WidgetsFlutterBinding.ensureInitialized();
-// Initialize Firebase Remote Config
-// Initialize Firebase Core
-try {
-// await Firebase.initializeApp(
-// options: DefaultFirebaseOptions.currentPlatform,
-// );
-print('Firebase Core initialized successfully');
-} catch (e) {
-print('Failed to initialize Firebase Core: $e');
-}
-try {
-final remoteConfig = FirebaseRemoteConfig.instance;
-await remoteConfig.setDefaults({
-'feature_iap_enabled': true,
-'feature_new_ui_enabled': false,
-'feature_daily_rewards_enabled': true,
-'feature_tutorial_enabled': true,
-'min_app_version': '1.0.0',
+import 'package:game/game/level_design_config.dart';
+import 'package:game/game/wave_spawn_table.dart';
 
-      'feature_battlepass': true,
-      'feature_gacha': true,});
-await remoteConfig.fetchAndActivate();
-print('Remote Config initialized successfully');
-} catch (e) {
-print('Failed to initialize Remote Config: $e');
-}
-_setupDI();
-await GetIt.I<AudioManager>().initialize();
-// ── Tutorial & Balancing ──────────────────────────────────
-if (!GetIt.I.isRegistered<TutorialManager>()) {
-final tutorialManager = TutorialManager();
-await tutorialManager.initialize();
-// Tutorial is started via startTutorial() method when needed
-GetIt.I.registerSingleton<TutorialManager>(tutorialManager);
-}
-// if (!GetIt.I.isRegistered<BalancingManager>()) { // Temporarily disabled - manager doesn't exist yet
-//   GetIt.I.registerSingleton<BalancingManager>(
-//     BalancingManager(defaultConfig: kDefaultBalancingConfig),
-//   );
-// }
-// ── Q7 DI Fix: Missing Systems ──────────────────────────
-if (!GetIt.I.isRegistered<BattlePassManager>()) {
-GetIt.I.registerSingleton<BattlePassManager>(BattlePassManager());
-}
-if (!GetIt.I.isRegistered<GachaManager>()) {
-GetIt.I.registerSingleton<GachaManager>(GachaManager());
-}
-if (!GetIt.I.isRegistered<CollectionManager>()) {
-GetIt.I.registerSingleton<CollectionManager>(CollectionManager());
-}
-// if (!GetIt.I.isRegistered<GuildWarManager>()) { // Temporarily disabled - manager doesn't exist yet
-//   GetIt.I.registerSingleton<GuildWarManager>(GuildWarManager());
-// }
-// if (!GetIt.I.isRegistered<TournamentManager>()) { // Temporarily disabled - manager doesn't exist yet
-//   GetIt.I.registerSingleton<TournamentManager>(TournamentManager());
-// }
-// if (!GetIt.I.isRegistered<SeasonalContentManager>()) { // Temporarily disabled - manager doesn't exist yet
-//   GetIt.I.registerSingleton<SeasonalContentManager>(SeasonalContentManager());
-// }
-// ── Social Systems Initialization ─────────────────────────────
-// await SocialInitializer.initialize( // Temporarily disabled - initializer doesn't exist yet
-//   playerId: 'player_' + DateTime.now().millisecondsSinceEpoch.toString(),
-//   playerName: 'Player',
-//   leaderboards: SocialInitializer.createStandardLeaderboards(
-//     gameId: 'mg_merge_puzzle',
-//     gameName: 'Merge Puzzle',
-//   ),
-//   enableFirebase: true,
-// );
-// logger.i('Social systems initialized.');
-runApp(const TycoonApp());
-}
-void _setupDI() {
-final di = GetIt.I;
-if (!di.isRegistered<AudioManager>()) {
-di.registerSingleton<AudioManager>(AudioManager());
-}
-if (!di.isRegistered<BattlePassManager>()) {
-di.registerSingleton(BattlePassManager());
-}
-if (!di.isRegistered<PrestigeManager>()) {
-final prestigeManager = PrestigeManager();
-di.registerSingleton(prestigeManager);
-_setupPrestige(prestigeManager);
-}
-if (!di.isRegistered<CollectionManager>()) {
-di.registerSingleton(CollectionManager());
-_registerCollections();
-}
-if (!di.isRegistered<DailyQuestManager>()) {
-di.registerSingleton(DailyQuestManager());
-}
-if (!di.isRegistered<LoginRewardsManager>()) {
-di.registerSingleton(LoginRewardsManager());
-}
-if (!di.isRegistered<StreakManager>()) {
-di.registerSingleton(StreakManager());
-}
-if (!di.isRegistered<DailyChallengeManager>()) {
-di.registerSingleton(DailyChallengeManager());
-}
-// if (!di.isRegistered<GuildWarManager>()) { // Temporarily disabled
-//   di.registerSingleton(GuildWarManager());
-// }
-// if (!di.isRegistered<TournamentManager>()) { // Temporarily disabled
-//   di.registerSingleton(TournamentManager());
-// }
-// if (!di.isRegistered<SeasonalContentManager>()) { // Temporarily disabled
-//   di.registerSingleton(SeasonalContentManager());
-// }
-_setupBattlePass();
-}
-class TycoonApp extends StatefulWidget {
-const TycoonApp({super.key});
-@override
-State<TycoonApp> createState() => _TycoonAppState();
-}
-class _TycoonAppState extends State<TycoonApp> {
-@override
-Widget build(BuildContext context) {
-return MultiProvider(
-providers: [
-ChangeNotifierProvider(create: (_) => MaterialInventory()),
-ChangeNotifierProvider(create: (_) => EconomyManager()),
-ChangeNotifierProvider(create: (_) => StationManager()),
-ChangeNotifierProvider(create: (_) => mg_common_game.AchievementManager()),
-ChangeNotifierProvider(create: (_) => DecorationManager()),
-ChangeNotifierProxyProvider<MaterialInventory, CraftingManager>(
-create: (context) => CraftingManager(
-Provider.of<MaterialInventory>(context, listen: false),
-),
-update: (context, inventory, previous) =>
-previous ?? CraftingManager(inventory),
-),
-ChangeNotifierProxyProvider<CraftingManager, ShopManager>(
-create: (context) =>
-ShopManager(Provider.of<CraftingManager>(context, listen: false)),
-update: (context, crafting, previous) =>
-previous ?? ShopManager(crafting),
-),
-ChangeNotifierProxyProvider2<
-MaterialInventory,
-UpgradeManager,
-DungeonManager
->(
-create: (context) => DungeonManager(
-Provider.of<MaterialInventory>(context, listen: false),
-Provider.of<UpgradeManager>(context, listen: false),
-),
-update: (context, inventory, upgrades, previous) =>
-previous ?? DungeonManager(inventory, upgrades),
-),
-ChangeNotifierProxyProvider<EconomyManager, UpgradeManager>(
-create: (context) => UpgradeManager(
-Provider.of<EconomyManager>(context, listen: false),
-),
-update: (context, economy, previous) =>
-previous ?? UpgradeManager(economy),
-),
-ProxyProvider6<
-MaterialInventory,
-CraftingManager,
-ShopManager,
-EconomyManager,
-StationManager,
-UpgradeManager,
-SaveManager
->(
-create: (context) => SaveManager(
-inventory: Provider.of<MaterialInventory>(context, listen: false),
-crafting: Provider.of<CraftingManager>(context, listen: false),
-shop: Provider.of<ShopManager>(context, listen: false),
-economy: Provider.of<EconomyManager>(context, listen: false),
-stations: Provider.of<StationManager>(context, listen: false),
-upgrades: Provider.of<UpgradeManager>(context, listen: false),
-),
-update:
-(
-context,
-inventory,
-crafting,
-shop,
-economy,
-stations,
-upgrades,
-previous,
-) =>
-previous ??
-SaveManager(
-inventory: inventory,
-crafting: crafting,
-shop: shop,
-economy: economy,
-stations: stations,
-upgrades: upgrades,
-),
-),
-],
-child: MaterialApp(
-title: 'Dungeon Craft Tycoon',
-supportedLocales: mgSupportedLocales,
-localizationsDelegates: mgLocalizationDelegates,
-theme: ThemeData.dark().copyWith(
-scaffoldBackgroundColor: AppColors.background,
-primaryColor: AppColors.primary,
-colorScheme: ColorScheme.fromSeed(
-seedColor: AppColors.primary,
-brightness: Brightness.dark,
-),
-),
-routes: {
-'/battlepass': (_) => const BattlePassScreen(),
-'/daily_quest': (_) => const DailyQuestScreen(),
-'/achievement': (_) => const AchievementScreen(),
-'/gacha': (_) => const GachaScreen(),
-'/daily-hub': (context) => DailyHubScreen(
-questManager: GetIt.I<DailyQuestManager>(),
-loginRewardsManager: GetIt.I<LoginRewardsManager>(),
-streakManager: GetIt.I<StreakManager>(),
-challengeManager: GetIt.I<DailyChallengeManager>(),
-accentColor: MGColors.primaryAction,
-onClose: () => Navigator.pop(context),
-),
-'/collection': (context) => CollectionScreen(
-collectionManager: GetIt.I<CollectionManager>(),
-),
-// '/guild-war': (context) => GuildWarScreen( // Temporarily disabled
-//   guildWarManager: GetIt.I<GuildWarManager>(),
-//   accentColor: MGColors.primaryAction,
-//   onClose: () => Navigator.pop(context),
-// ),
-// '/tournament': (context) => TournamentScreen( // Temporarily disabled
-//   tournamentManager: GetIt.I<TournamentManager>(),
-//   accentColor: MGColors.primaryAction,
-//   onClose: () => Navigator.pop(context),
-// ),
-// '/seasonal-event': (context) => SeasonalEventScreen( // Temporarily disabled
-//   seasonalContentManager: GetIt.I<SeasonalContentManager>(),
-//   accentColor: MGColors.primaryAction,
-//   onClose: () => Navigator.pop(context),
-// ),
-// '/friends': (context) => FriendsScreen( // Temporarily disabled
-//   title: 'FRIENDS',
-//   onClose: () => Navigator.pop(context),
-//   accentColor: MGColors.primaryAction,
-// ),
-// '/leaderboard': (context) => SocialLeaderboardScreen( // Temporarily disabled
-//   title: 'LEADERBOARD',
-//   leaderboardId: 'mg_pinball_all_time',
-//   onClose: () => Navigator.pop(context),
-//   accentColor: MGColors.primaryAction,
-// ),
-},
-home: Builder(
-builder: (context) {
-// Auto-load game when app starts
-WidgetsBinding.instance.addPostFrameCallback((_) async {
-final saveManager = context.read<SaveManager>();
-final messenger = ScaffoldMessenger.of(context);
-final loaded = await saveManager.loadGame();
-if (loaded) {
-messenger.showSnackBar(const SnackBar(content: Text('Game loaded successfully')));
-}
-// Start auto-save
-saveManager.startAutoSave();
-});
-return const TycoonScreen();
-},
-),
-),
-);
-}
-}
-void _setupBattlePass() {
-final bp = GetIt.I<BattlePassManager>();
-final season = BPSeasonBuilder.create28DaySeason(
-id: 'season_1',
-nameKr: '시즌 1',
-startDate: DateTime.now().subtract(const Duration(days: 1)),
-maxLevel: 50,
-expPerLevel: 1000,
-);
-bp.setSeason(season);
-bp.setMissions(
-daily: BPSeasonBuilder.createDefaultDailyMissions(),
-weekly: BPSeasonBuilder.createDefaultWeeklyMissions(),
-);
-}
-void _setupPrestige(PrestigeManager manager) {
-// ── Prestige Upgrades (idle game defaults) ──────────────────
-// Five core upgrades for idle games
-manager.registerPrestigeUpgrade(PrestigeUpgrade(
-id: 'gold_multiplier',
-name: '골드 배수',
-description: '골드 획득량 +10%',
-maxLevel: 50,
-costPerLevel: 1,
-bonusPerLevel: 0.1,
-));
-manager.registerPrestigeUpgrade(PrestigeUpgrade(
-id: 'xp_boost',
-name: 'XP 부스트',
-description: 'XP 획득량 +15%',
-maxLevel: 40,
-costPerLevel: 2,
-bonusPerLevel: 0.15,
-));
-manager.registerPrestigeUpgrade(PrestigeUpgrade(
-id: 'production_speed',
-name: '생산 속도',
-description: '생산 속도 +20%',
-maxLevel: 30,
-costPerLevel: 2,
-bonusPerLevel: 0.2,
-));
-manager.registerPrestigeUpgrade(PrestigeUpgrade(
-id: 'starting_resources',
-name: '초기 자원',
-description: '초기 자원 +5%',
-maxLevel: 60,
-costPerLevel: 1,
-bonusPerLevel: 0.05,
-));
-manager.registerPrestigeUpgrade(PrestigeUpgrade(
-id: 'offline_income',
-name: '오프라인 수익',
-description: '오프라인 수익 +20%',
-maxLevel: 30,
-costPerLevel: 3,
-bonusPerLevel: 0.2,
-));
-// ── Prestige Reset Callbacks ────────────────────────────────
-// TODO: Add game-specific reset callbacks:
-// manager.registerResetCallback(() {
-//   if (GetIt.I.isRegistered<ProgressionManager>()) {
-//     GetIt.I<ProgressionManager>().reset();
-//   }
-//   if (GetIt.I.isRegistered<UpgradeManager>()) {
-//     GetIt.I<UpgradeManager>().reset();
-//   }
-// });
-}
-void _registerCollections() {
-final collection = GetIt.I<CollectionManager>();
-// Characters 컬렉션
-collection.registerCollection(Collection(
-id: 'characters',
-name: '캐릭터',
-description: '모든 캐릭터를 수집하세요',
-items: [
-CollectionItem(
-id: 'char_warrior',
-name: '전사',
-description: '강인한 근접 전투 캐릭터',
-rarity: CollectionRarity.common,
-),
-CollectionItem(
-id: 'char_mage',
-name: '마법사',
-description: '강력한 마법 공격 캐릭터',
-rarity: CollectionRarity.rare,
-),
-CollectionItem(
-id: 'char_archer',
-name: '궁수',
-description: '원거리 정밀 공격 캐릭터',
-rarity: CollectionRarity.rare,
-),
-CollectionItem(
-id: 'char_assassin',
-name: '암살자',
-description: '치명적인 은신 공격 캐릭터',
-rarity: CollectionRarity.epic,
-),
-CollectionItem(
-id: 'char_healer',
-name: '힐러',
-description: '팀을 치유하는 지원 캐릭터',
-rarity: CollectionRarity.legendary,
-),
-],
-completionReward: CollectionReward(type: RewardType.gold, amount: 10000),
-milestoneRewards: {
-25: CollectionReward(type: RewardType.gold, amount: 1000),
-50: CollectionReward(type: RewardType.gold, amount: 3000),
-75: CollectionReward(type: RewardType.gold, amount: 5000),
-},
-//   ));
-// 
-//   // 아이템 해제 콜백 (햅틱 피드백)
-  collection.onItemUnlocked = (collectionId, itemId) {
-    // SettingsManager가 등록되어 있으면 햅틱 피드백
-    debugPrint('Collection item unlocked: $collectionId / $itemId');
-  };
+void main() {
+  runApp(const MyApp());
 }
 
-void _registerDailyQuests() {
-  final dailyQuest = GetIt.I<DailyQuestManager>();
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-  dailyQuest.registerQuest(DailyQuest(
-    id: 'win_races',
-    title: '레이스 승리',
-    description: '레이스 3회 승리',
-    targetValue: 3,
-    goldReward: 500,
-    xpReward: 10,
-  ));
+  static const gameId = 'MG-0017';
+  static const gameTitle = 'Dungeon Craft Tycoon';
+  static const coreFunLoop = kCoreFunLoop;
 
-  dailyQuest.registerQuest(DailyQuest(
-    id: 'use_nitro',
-    title: '니트로 사용',
-    description: '니트로 20회 사용',
-    targetValue: 20,
-    goldReward: 300,
-    xpReward: 5,
-  ));
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: gameTitle,
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF1E88E5),
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+      ),
+      routes: {
+        '/game': (_) => const GameScreen(),
+        '/engine': (_) => const FrameLoopScreen(),
+        '/levels': (_) => const LevelRoadmapScreen(),
+        '/daily': (_) => const DailyHubScreen(),
+        '/retention': (_) => const RetentionHubScreen(),
+        '/guild-war': (_) => const GuildWarScreen(),
+        '/tournament': (_) => const TournamentScreen(),
+        '/seasonal-event': (_) => const SeasonalEventScreen(),
+      },
+      home: const MainMenuScreen(),
+    );
+  }
+}
 
-  dailyQuest.registerQuest(DailyQuest(
-    id: 'complete_laps',
-    title: '랩 완주',
-    description: '랩 50개 완주',
-    targetValue: 50,
-    goldReward: 200,
-    xpReward: 3,
-  ));
+class MainMenuScreen extends StatelessWidget {
+  const MainMenuScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Icon(Icons.videogame_asset_rounded, size: 72),
+                  const SizedBox(height: 24),
+                  Text(
+                    MyApp.gameId,
+                    key: const ValueKey('game-id'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    MyApp.gameTitle,
+                    key: const ValueKey('game-title'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Core Fun: ${MyApp.coreFunLoop}',
+                    key: const ValueKey('core-fun-loop'),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  FilledButton.icon(
+                    key: const ValueKey('start-game'),
+                    onPressed: () => Navigator.of(context).pushNamed('/game'),
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: const Text('Start Game'),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    key: const ValueKey('level-roadmap'),
+                    onPressed: () => Navigator.of(context).pushNamed('/levels'),
+                    icon: const Icon(Icons.map_rounded),
+                    label: const Text('Level Roadmap'),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: const [
+                      _MenuAction(
+                        route: '/engine',
+                        buttonKey: ValueKey('engine-loop'),
+                        icon: Icons.memory_rounded,
+                        label: 'Engine',
+                      ),
+                      _MenuAction(
+                        route: '/retention',
+                        buttonKey: ValueKey('rewards'),
+                        icon: Icons.card_giftcard_rounded,
+                        label: 'Rewards',
+                      ),
+                      _MenuAction(
+                        route: '/daily',
+                        buttonKey: ValueKey('daily-quests'),
+                        icon: Icons.today_rounded,
+                        label: 'Daily',
+                      ),
+                      _MenuAction(
+                        route: '/guild-war',
+                        buttonKey: ValueKey('guild-war'),
+                        icon: Icons.groups_rounded,
+                        label: 'Guild',
+                      ),
+                      _MenuAction(
+                        route: '/tournament',
+                        buttonKey: ValueKey('tournament'),
+                        icon: Icons.emoji_events_rounded,
+                        label: 'Tournament',
+                      ),
+                      _MenuAction(
+                        route: '/seasonal-event',
+                        buttonKey: ValueKey('seasonal-event'),
+                        icon: Icons.event_rounded,
+                        label: 'Event',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MenuAction extends StatelessWidget {
+  const _MenuAction({
+    required this.route,
+    required this.buttonKey,
+    required this.icon,
+    required this.label,
+  });
+
+  final String route;
+  final ValueKey<String> buttonKey;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 132,
+      child: OutlinedButton.icon(
+        key: buttonKey,
+        onPressed: () => Navigator.of(context).pushNamed(route),
+        icon: Icon(icon),
+        label: Text(label),
+      ),
+    );
+  }
+}
+
+class GameScreen extends StatefulWidget {
+  const GameScreen({super.key});
+
+  @override
+  State<GameScreen> createState() => _GameScreenState();
+}
+
+class _GameScreenState extends State<GameScreen> {
+  int levelIndex = 0;
+  int goldBank = 0;
+  int xpBank = 0;
+
+  GameLevelDesign get currentLevel => kLevelDesign[levelIndex];
+
+  void completeAction() {
+    setState(() {
+      goldBank += currentLevel.goldReward;
+      xpBank += currentLevel.xpReward;
+      if (levelIndex < kLevelDesign.length - 1) {
+        levelIndex += 1;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final level = currentLevel;
+    final spawn = kWaveSpawnTable[levelIndex];
+    return Scaffold(
+      appBar: AppBar(title: const Text('Game Ready')),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Primary loop: ${MyApp.coreFunLoop}',
+                  key: const ValueKey('primary-loop'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Level ${level.levelIndex} - ${level.stage}',
+                  key: const ValueKey('level-name'),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Objective: ${level.objective}',
+                  key: const ValueKey('level-objective'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Wave ${level.wave} | Difficulty ${level.difficulty.toStringAsFixed(2)}',
+                  key: const ValueKey('difficulty-label'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Pressure: ${spawn.enemyCount} enemies every '
+                  '${spawn.spawnCadenceSeconds.toStringAsFixed(2)}s',
+                  key: const ValueKey('pressure-label'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                LinearProgressIndicator(
+                  value: (level.levelIndex / kLevelDesign.length).clamp(0.0, 1.0),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Reward bank: $goldBank gold / $xpBank xp',
+                  key: const ValueKey('reward-bank'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                FilledButton.icon(
+                  key: const ValueKey('complete-action'),
+                  onPressed: completeAction,
+                  icon: const Icon(Icons.check_circle_rounded),
+                  label: const Text('Complete Action'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FrameLoopGame extends FlameGame {
+  double elapsedSeconds = 0;
+  int frameTicks = 0;
+
+  @override
+  void update(double dt) {
+    elapsedSeconds += dt;
+    frameTicks += 1;
+    super.update(dt);
+  }
+}
+
+class FrameLoopScreen extends StatelessWidget {
+  const FrameLoopScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Engine Loop')),
+      body: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              'GameWidget frame loop is active for runtime input, update, and render validation.',
+              key: ValueKey('engine-loop-status'),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(child: GameWidget(game: _FrameLoopGame())),
+        ],
+      ),
+    );
+  }
+}
+
+class LevelRoadmapScreen extends StatelessWidget {
+  const LevelRoadmapScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Level Roadmap')),
+      body: ListView.builder(
+        key: const ValueKey('level-list'),
+        padding: const EdgeInsets.all(16),
+        itemCount: kLevelDesign.length,
+        itemBuilder: (context, index) {
+          final level = kLevelDesign[index];
+          final spawn = kWaveSpawnTable[index];
+          return ListTile(
+            leading: CircleAvatar(child: Text('${level.levelIndex}')),
+            title: Text('Level ${level.levelIndex} - ${level.stage}'),
+            subtitle: Text(
+              'Wave ${level.wave} | difficulty ${level.difficulty.toStringAsFixed(2)} | '
+              '${spawn.enemyCount} enemies | reward ${level.goldReward}g/${level.xpReward}xp',
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class DailyHubScreen extends StatelessWidget {
+  const DailyHubScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Daily Quests',
+      detail: 'Short goals keep the fun loop moving.',
+      icon: Icons.today_rounded,
+    );
+  }
+}
+
+class RetentionHubScreen extends StatelessWidget {
+  const RetentionHubScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Rewards',
+      detail: 'Progression loop: return, claim, improve.',
+      icon: Icons.card_giftcard_rounded,
+    );
+  }
+}
+
+class GuildWarScreen extends StatelessWidget {
+  const GuildWarScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Guild War',
+      detail: 'Social competition is reachable from the main loop.',
+      icon: Icons.groups_rounded,
+    );
+  }
+}
+
+class TournamentScreen extends StatelessWidget {
+  const TournamentScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Tournament',
+      detail: 'Competitive goals are available for mastery.',
+      icon: Icons.emoji_events_rounded,
+    );
+  }
+}
+
+class SeasonalEventScreen extends StatelessWidget {
+  const SeasonalEventScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _SimpleScreen(
+      title: 'Seasonal Event',
+      detail: 'Timed content gives the loop a fresh reason to return.',
+      icon: Icons.event_rounded,
+    );
+  }
+}
+
+class _SimpleScreen extends StatelessWidget {
+  const _SimpleScreen({required this.title, required this.detail, required this.icon});
+
+  final String title;
+  final String detail;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 56),
+              const SizedBox(height: 16),
+              Text(
+                title,
+                key: const ValueKey('screen-title'),
+                style: Theme.of(context).textTheme.headlineSmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(detail, key: const ValueKey('screen-detail'), textAlign: TextAlign.center),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
